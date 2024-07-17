@@ -8,8 +8,8 @@
 ## Phase 1: 3 days - deadline: 18/7/2024
 - [ ] Function to read input file: A
 - [ ] Function to write output file: A
-- [ ] Class Cell: C
-- [ ] Class Problem: C
+- [x] Class Cell: C
+- [x] Class Problem: C
 - [ ] BFS, GBFS: B
 - [ ] DFS, UCS: B
 - [ ] Best-first-search, A*: D
@@ -17,7 +17,7 @@
 
 ## Phase 2: 2 days - deadline: 20/7/2024
 - [ ] GUI
-- [ ] Another algorithm to run level 2 and 3
+- [x] Another algorithm to run level 2 and 3
 - [ ] Generate test cases for level 2 and 3
 
 ## Phase 3: 4 days - deadline: 24/7/2024
