@@ -41,21 +41,22 @@ class Problem:
     def ACTIONS(self, current: State) -> list:
         actions = []
 
-        if self.grid.is_gas_station(current.x, current.y) and self.in_time(current.x, current.y, current.time - self.grid.refill_time(current.x, current.y)):
-            actions.append((0, 0))
-
-        if current.fuel == 0:
-            return actions
+        if self.fuel_capacity is not None:
+            if self.grid.is_gas_station(current.x, current.y) and self.in_time(current.x, current.y, current.time - self.grid.refill_time(current.x, current.y)):
+                actions.append((0, 0))
+            if self.fuel_capacity is not None and current.fuel == 0:
+                return actions
         
         for delta_x, delta_y in self.delta:
             new_x = current.x + delta_x
             new_y = current.y + delta_y
             if not self.grid.is_move_cell(new_x, new_y):
                 continue
-
-            new_time = current.time - self.grid.time_2_out(current.x, current.y)
-            if not self.in_time(new_x, new_y, new_time):
-                continue
+            
+            if self.limit_time is not None:
+                new_time = current.time - self.grid.time_2_out(current.x, current.y)
+                if not self.in_time(new_x, new_y, new_time):
+                    continue
             
             actions.append((delta_x, delta_y))
 
@@ -80,7 +81,7 @@ class Problem:
         return State(new_x, new_y, new_fuel, new_time)
 
     def ACTION_COST(self, prev_state: State, action, cur_state: State):
-        if prev_state.x != cur_state or prev_state.y != cur_state:
+        if prev_state.x != cur_state.x or prev_state.y != cur_state.y:
             return 1
         return 0
 
