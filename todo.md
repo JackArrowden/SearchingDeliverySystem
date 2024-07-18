@@ -6,8 +6,8 @@
 
 # Tasks
 ## Phase 1: 3 days - deadline: 18/7/2024
-- [ ] Function to read input file: A
-- [ ] Function to write output file: A
+- [x] Function to read input file: A
+- [x] Function to write output file: A
 - [x] Class Cell: C
 - [x] Class Problem: C
 - [ ] BFS, GBFS: B
