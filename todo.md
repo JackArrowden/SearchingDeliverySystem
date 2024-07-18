@@ -11,7 +11,7 @@
 - [x] Class Cell: C
 - [x] Class Problem: C
 - [x] BFS, GBFS: B
-- [ ] DFS, UCS: B
+- [x] DFS, UCS: B
 - [ ] Best-first-search, A*: D
 - [ ] Generate test cases for level 1: D
 

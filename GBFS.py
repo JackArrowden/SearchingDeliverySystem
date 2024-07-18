@@ -11,10 +11,10 @@ def GBFS(problem: Problem):
         frontier.sort(key=lambda x: problem.heuristic(x.state))
         node = frontier.pop(0)
 
-        if problem.is_goal(node.state):
-            return trace_path(node)
-
         for child in problem.EXPAND(node):
+            if problem.is_goal(child.state):
+                return trace_path(child)
+            
             if child.state not in reached:
                 reached[child.state] = child
                 frontier.append(child)
