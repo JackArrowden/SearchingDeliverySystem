@@ -12,8 +12,8 @@
 - [x] Class Problem: C
 - [x] BFS, GBFS: B
 - [x] DFS, UCS: B
-- [ ] Best-first-search, A*: D
-- [ ] Generate test cases for level 1: D
+- [x] Best-first-search, A*: D
+- [x] Generate test cases for level 1: D
 
 ## Phase 2: 2 days - deadline: 20/7/2024
 - [ ] GUI: A
