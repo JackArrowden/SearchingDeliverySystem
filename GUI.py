@@ -26,6 +26,9 @@ def round_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
 
     return canvas.create_polygon(points, **kwargs, smooth=True)
 
+def drawSquare(canvas, x, y, edge, **kwargs):
+    canvas.create_rectangle(x * edge, y * edge, x * edge + edge, y * edge + edge, **kwargs)
+
 class SystemGUI():
     def __init__(self, root):
         self.root = root
@@ -34,8 +37,14 @@ class SystemGUI():
         self.default_text = "Enter input file..."
         self.text1 = "The file's name must not be left blank"
         self.text2 = "An error occur while opening input file\nPlease enter another file's name"
-        self.root.protocol("WM_DELETE_WINDOW", self.exit)        
+        self.root.protocol("WM_DELETE_WINDOW", self.exit)    
+            
         self.fileName = ""
+        self.map = [[0, 0, 5], [0, -1, 0], [0, -1, 0]]
+        self.listSs = []
+        self.listGs = []
+        self.listFs = []
+        self.listPath = []
         
         self.frame1 = tk.Frame(self.root)
         self.frame2 = tk.Frame(self.root)
@@ -95,11 +104,59 @@ class SystemGUI():
         self.exitBtn3.pack(pady = (5, 10))
         
     def stepByStepFrame(self): #### Frame 4
-        self.backBtn3 = tk.Button(self.frame4, text = "Back", command = self.showFrame2, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
-        self.backBtn3.pack(pady = (5, 10))
+        wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
+        hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
         
-        self.exitBtn4 = tk.Button(self.frame4, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
-        self.exitBtn4.pack(pady = (5, 10))
+        cellEdge = int(((wth / len(self.map[0])) + (hht / len(self.map))) / 2)
+        wth = cellEdge * len(self.map[0])
+        hht = cellEdge * len(self.map)
+        
+        ### Sub frame 4 a
+        self.subFrame4a = tk.Canvas(self.frame4, bg = "white", cursor = "hand2", width = wth, height = hht)
+        self.subFrame4a.pack(expand=True, anchor='center', pady = (10, 10))  
+        
+        # Clear all widgets
+        self.clearFrame(self.subFrame4a)
+        
+        for line in range(0, wth + cellEdge, cellEdge):
+            self.subFrame4a.create_line([(line, 0), (line, hht)], fill='black', tags='grid_line_w')
+
+        for line in range(0, hht + cellEdge, cellEdge):
+            self.subFrame4a.create_line([(0, line), (wth, line)], fill='black', tags='grid_line_h')
+            
+        n = len(self.map)
+        m = len(self.map[0])
+        
+        # Draw wall cells
+        for i in range(n):
+            for j in range(m):
+                if self.map[i][j] == -1:
+                    drawSquare(self.subFrame4a, j, i, cellEdge, fill="lightgray")
+                elif self.map[i][j] > 0:
+                    drawSquare(self.subFrame4a, j, i, cellEdge, fill="lightblue", outline="blue")
+                    self.subFrame4a.create_text(j * cellEdge + cellEdge / 2, i * cellEdge + cellEdge / 2, text = str(self.map[i][j]), fill="black")
+        
+        # Draw start vertice
+        
+        # Draw goal vertice
+        
+        # Draw fuel cells
+        
+        # Draw search lines
+        
+        # Draw top and right border
+        self.subFrame4a.create_line([(2, 0), (2, hht)], fill='black', tags='grid_line_w')
+        self.subFrame4a.create_line([(0, 2), (wth, 2)], fill='black', tags='grid_line_w')
+        
+        ### Sub frame 4 b
+        self.subFrame4b = tk.Frame(self.frame4)
+        self.subFrame4b.pack(expand=True, anchor='center', pady = (10, 10))  
+        
+        self.backBtn3 = tk.Button(self.subFrame4b, text = "Back", command = self.showFrame2, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+        self.backBtn3.pack(pady = (0, 5))
+        
+        self.exitBtn4 = tk.Button(self.subFrame4b, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+        self.exitBtn4.pack(pady = (5, 0))
     
     def showFrame1(self):
         self.unshowAllFrames()
@@ -126,6 +183,10 @@ class SystemGUI():
         self.frame2.pack_forget()
         self.frame3.pack_forget()
         self.frame4.pack_forget()
+        
+    def clearFrame(self, frame):
+        for widget in frame.winfo_children():
+            widget.destroy()
         
     def getFileName(self):
         self.fileName = self.entry.get("1.0", tk.END).strip()
