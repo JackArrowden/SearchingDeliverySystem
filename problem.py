@@ -4,39 +4,34 @@ from node import Node
 from grid import Grid
 
 class Problem:
-    def __init__(self, matrix, start, goal, fuel_capacity = None, limit_time = None):
+    def __init__(self, matrix, start_list, goal_list, limit_time = None, fuel_capacity = None):
         self.grid = Grid(matrix)
 
-        
-        if not self.grid.is_cell(start[0], start[1]) or not self.grid.is_cell(goal[0], goal[1]):
-            raise ValueError('error with start and goal')
-        self.start = start
-        self.goal = goal
-
+        self.start = start_list
+        self.goal = goal_list
 
         self.limit_time = limit_time
         self.fuel_capacity = fuel_capacity
 
-
         self.delta = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
-    def in_time(self, x: int, y: int, cur_time) -> bool:
-        if cur_time is not None and cur_time < abs(x - self.goal[0]) + abs(y - self.goal[1]):
+    def in_time(self, x: int, y: int, cur_time, goal_id: int = 0) -> bool:
+        if cur_time is not None and cur_time < abs(x - self.goal[goal_id][0]) + abs(y - self.goal[goal_id][1]):
             return False
         return True
     
 
 
-    def heuristic(self, current: State):
-        return abs(current.x - self.goal[0]) + abs(current.y - self.goal[1]) 
+    def heuristic(self, current: State, goal_id: int = 0):
+        return abs(current.x - self.goal[goal_id][0]) + abs(current.y - self.goal[goal_id][1]) 
     
-    def is_goal(self, current: State) -> bool:
-        if  current.x == self.goal[0] and current.y == self.goal[1]:
+    def is_goal(self, current: State, goal_id: int = 0) -> bool:
+        if  current.x == self.goal[goal_id][0] and current.y == self.goal[goal_id][1]:
             return True
         return False
     
-    def init(self) -> State:
-        return State(self.start[0], self.start[1], self.fuel_capacity, self.limit_time)
+    def init(self, start_id: int = 0) -> State:
+        return State(self.start[start_id][0], self.start[start_id][1], self.fuel_capacity, self.limit_time)
 
     def ACTIONS(self, current: State) -> list:
         actions = []
