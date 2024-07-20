@@ -6,7 +6,7 @@ def a_star_search(problem, W):
 fileName = "test_level_1/input1_level1.txt"
 map, start, goal = readInput(fileName)
 
-problem = Problem(map, start, goal)
+problem = Problem(matrix, [(1, 1)], [(7, 8)])
 
 result = a_star_search(problem, 1.5)
 
