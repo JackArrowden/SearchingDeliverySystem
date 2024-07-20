@@ -38,7 +38,7 @@ def plot_map(map_2d, file_name='map.png'):
     plt.show()
 
 # Read the map from input.txt
-file_path = "input5_level1.txt"
+file_path = "test_level_1\input5_level1.txt"
 n, m, map_2d = read_map_from_file(file_path)
 
 print(f"Dimensions read from file: n={n}, m={m}")
