@@ -2,11 +2,11 @@ import heapq
 from problem import *
 from FileHandler import *
 
-def best_first_search(problem, f):
-    initial_node = Node(problem.init)
+def best_first_search(problem : Problem, f):
+    initial_node = Node(problem.init())
     frontier = []
     heapq.heappush(frontier, (f(initial_node), initial_node))
-    reached = {problem.initial: initial_node}
+    reached = {problem.init(): initial_node}
 
     while frontier:
         _, node = heapq.heappop(frontier)

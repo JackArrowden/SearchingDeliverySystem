@@ -6,13 +6,10 @@ def a_star_search(problem, W):
 fileName = "test_level_1/input1_level1.txt"
 map, start, goal = readInput(fileName)
 
-print(start)
-
-problem = Problem(map, start[0], goal[0])
+problem = Problem(map, start, goal)
 
 result = a_star_search(problem, 1.5)
 
 path = trace_path (result)
 
-for cur in path:
-    print(cur + ' ')
+print(path)
