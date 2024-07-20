@@ -15,13 +15,13 @@
 - [x] Best-first-search, A*: D
 - [x] Generate test cases for level 1: D
 
-## Phase 2: 2 days - deadline: 20/7/2024
+## Phase 2: 3 days - deadline: 21/7/2024
 - [ ] GUI: A
 - [x] Another algorithm to run level 2 and 3: C
 - [ ] Generate test cases for level 2 and 3: D
 - [x] Write report about BFS and GBFS: B
 
-## Phase 3: 4 days - deadline: 24/7/2024
+## Phase 3: 3 days - deadline: 24/7/2024
 - [ ] Another algorithm to run level 4: A, B, C, D
 - [ ] Generate test cases for level 4: A
 - [ ] Write report about DFS and UCS: B
