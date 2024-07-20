@@ -17,7 +17,7 @@ matrix =   [[0, 0, 0, 0, -1, -1, 0, 0, 0, 0],
             [0, -1, -1, -1, -1, 0, 0, 0, 0, 0],
             [0, 0, 5, 0, 0, 0, -1, -1, -1, 0]]
 
-problem = Problem(matrix, (1, 1), (7, 8), 10, 20)
+problem = Problem(matrix, [(1, 1)], [(7, 8)])
 
 result = a_star_search(problem, 1.5)
 
