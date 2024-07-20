@@ -1,5 +1,12 @@
 import random
 
+def checkOpenFile(file):
+    try:
+        with open(file, 'r') as cur:
+            return True
+    except:
+        return False
+
 def autoFindGoal(mat, listSs, listGs): # Does not account for Fuel stations because they are represented as -2
     result = []
     n = len(mat)
