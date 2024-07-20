@@ -1,19 +1,11 @@
 from problem import Problem
 from UCS_level_2_3 import UCS_level_2_3
+from A_star import a_star_search
+from FileHandler import readInput
 
 
-matrix =   [[0, 0, 0, 0, -1, -1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, -1, 0, -1],
-            [0, 0, -1, -1, -1, 0, 0, -1, 0, -1],
-            [0, 0, 0, 0, -1, 0, 0, -1, 0, 0],
-            [0, 0, -1, -1, -1, 0, 0, -1, -1, 0],
-            [1, 0, -1, 0, 0, 0, 0, 0, -1, 0],
-            [0, 0, -2, 0, -1, 4, -1, 8, -1, 0],
-            [0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
-            [0, -1, -1, -1, -1, 0, 0, 0, 0, 0],
-            [0, 0, 5, 0, 0, 0, -1, -1, -1, 0]]
-problem = Problem(matrix, (1, 1), (7, 8), 10, 20)
-
+(matrix, start, goal) = readInput('./test_level_1/input1_level1.txt')
+problem = Problem(matrix, start, goal)
 path = UCS_level_2_3(problem)
 
 print(path)
