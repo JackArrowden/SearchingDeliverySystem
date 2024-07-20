@@ -12,13 +12,13 @@
 - [x] Class Problem: C
 - [x] BFS, GBFS: B
 - [x] DFS, UCS: B
-- [ ] Best-first-search, A*: D
-- [ ] Generate test cases for level 1: D
+- [x] Best-first-search, A*: D
+- [x] Generate test cases for level 1: D
 
 ## Phase 2: 2 days - deadline: 20/7/2024
 - [ ] GUI
 - [x] Another algorithm to run level 2 and 3
-- [ ] Generate test cases for level 2 and 3
+- [ ] Generate test cases for level 2 and 3 D
 
 ## Phase 3: 4 days - deadline: 24/7/2024
 - [ ] Another algorithm to run level 4
