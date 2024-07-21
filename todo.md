@@ -22,6 +22,7 @@
 - [x] Write report about BFS and GBFS: B
 
 ## Phase 3: 3 days - deadline: 24/7/2024
+- [ ] GUI level 4: A
 - [ ] Another algorithm to run level 4: A, B, C, D
 - [ ] Generate test cases for level 4: A
 - [ ] Write report about DFS and UCS: B

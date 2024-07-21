@@ -75,7 +75,7 @@ def readInput(file):
             goalPoints.clear()
             goalPoints = [point[2] if len(point) == 3 else listPoints.pop() for point in points]
         
-        return (cityMap, startPoints, goalPoints) if t == None else (cityMap, startPoints, goalPoints, t) if f == None else (cityMap, startPoints, goalPoints, t, f)
+        return (cityMap, startPoints, goalPoints) if t == None else (cityMap, startPoints, goalPoints, t) if f == None else (cityMap, startPoints, goalPoints, t, f, fuel)
             
     finally:
         curFile.close()
