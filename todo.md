@@ -16,7 +16,7 @@
 - [x] Generate test cases for level 1: D
 
 ## Phase 2: 3 days - deadline: 21/7/2024
-- [ ] GUI: A
+- [x] GUI: A
 - [x] Another algorithm to run level 2 and 3: C
 - [ ] Generate test cases for level 2 and 3: D
 - [x] Write report about BFS and GBFS: B

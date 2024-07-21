@@ -82,6 +82,7 @@ class SystemGUI():
         self.num3Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ ba được thêm vào ở từng bước chạy
         self.list4thQuater = []
         self.num4Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ tư được thêm vào ở từng bước chạy
+        
         self.listRemainVerLine = [] # Những cạnh chưa được thêm sẽ lưu ở đây
         self.listRemainHorLine = [] 
         self.listRemain1Q = [] 
@@ -119,7 +120,7 @@ class SystemGUI():
         
     def chooseViewFrame(self): #### Frame 2
         ## Back button 1
-        self.backBtn1 = tk.Button(self.frame2, text = "Back", command = self.showFrame1, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+        self.backBtn1 = tk.Button(self.frame2, text = "Back", command = self.resetProblem, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
         self.backBtn1.pack(pady = (5, 10))
         
         ## Final result
@@ -275,6 +276,37 @@ class SystemGUI():
         self.frame2.pack_forget()
         self.frame3.pack_forget()
         self.frame4.pack_forget()
+    
+    def resetProblem(self):
+        self.fileName = ""
+        self.map = [[0]]
+        self.listSs = []
+        self.listGs = []
+        self.listFs = []
+        self.isSolvable = True
+        
+        self.listPath = []
+        self.listVerLine = [] # Các cạnh chung một S và G sẽ có cùng màu
+        self.numV = [] # Lưu số lượng cạnh dọc được thêm vào ở từng bước chạy
+        self.listHorLine = []
+        self.numH = [] # Lưu số lượng cạnh ngang được thêm vào ở từng bước chạy
+        self.list1stQuater = []
+        self.num1Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ nhất được thêm vào ở từng bước chạy
+        self.list2ndQuater = []
+        self.num2Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ hai được thêm vào ở từng bước chạy
+        self.list3rdQuater = []
+        self.num3Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ ba được thêm vào ở từng bước chạy
+        self.list4thQuater = []
+        self.num4Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ tư được thêm vào ở từng bước chạy
+        
+        self.listRemainVerLine = [] # Những cạnh chưa được thêm sẽ lưu ở đây
+        self.listRemainHorLine = [] 
+        self.listRemain1Q = [] 
+        self.listRemain2Q = [] 
+        self.listRemain3Q = [] 
+        self.listRemain4Q = []  
+        
+        self.showFrame1()   
         
     def clearFrame(self, frame):
         for widget in frame.winfo_children():
