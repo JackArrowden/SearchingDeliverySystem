@@ -55,7 +55,7 @@ def drawOneQuater(canvas, array, edge, type):
 class SystemGUI():
     def __init__(self, root):
         self.root = root
-        self.root.geometry('820x560')
+        self.root.geometry('820x620')
         self.root.title("Delivery system")
         self.default_text = "Enter input file..."
         self.text1 = "The file's name must not be left blank"
@@ -68,6 +68,10 @@ class SystemGUI():
         self.listGs = []
         self.listFs = []
         self.isSolvable = True
+        
+        self.isHead = True
+        self.isTail = False
+        self.isResetListForFrame4 = True
         
         self.listPath = []
         self.listVerLine = [] # Các cạnh chung một S và G sẽ có cùng màu
@@ -136,6 +140,13 @@ class SystemGUI():
         self.exitBtn2.pack(pady = (10, 5))
     
     def finalResultFrame(self): #### Frame 3
+        self.moveContent(self.listRemainHorLine, self.listHorLine)
+        self.moveContent(self.listRemainVerLine, self.listVerLine)
+        self.moveContent(self.listRemain1Q, self.list1stQuater)
+        self.moveContent(self.listRemain2Q, self.list2ndQuater)
+        self.moveContent(self.listRemain3Q, self.list3rdQuater)
+        self.moveContent(self.listRemain4Q, self.list4thQuater)
+        
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
         
@@ -159,7 +170,11 @@ class SystemGUI():
         self.exitBtn3 = tk.Button(self.subFrame3b, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
         self.exitBtn3.pack(pady = (5, 0))
         
-    def stepByStepFrame(self): #### Frame 4
+    def stepByStepFrame(self): #### Frame 4        
+        if self.isResetListForFrame4:
+            self.isResetListForFrame4 = False
+            self.resetAllList()
+
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
         
@@ -168,20 +183,46 @@ class SystemGUI():
         hht = cellEdge * len(self.map)
         
         ### Sub frame 4 a
-        self.subFrame4a = tk.Canvas(self.frame4, bg = "white", cursor = "hand2", width = wth, height = hht)
-        self.subFrame4a.pack(expand=True, anchor='center', pady = (10, 10))  
+        self.subFrame4a = tk.Frame(self.frame4)
+        self.subFrame4a.pack(expand=True, anchor='center', pady = (5, 15))  
         
-        self.mapDrawing(self.subFrame4a, wth, hht, cellEdge)
+        ## Sub frame 4 a1
+        self.subFrame4a1 = tk.Frame(self.subFrame4a, width = 410)
+        self.subFrame4a1.pack(side = tk.LEFT, expand=False, anchor='center', pady = (5, 5))  
+        
+        self.backBtn3a1 = tk.Button(self.subFrame4a1, text = "Back", command = self.showFrame2, bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.backBtn3a1.pack(side = tk.LEFT, pady = (5, 0), padx = (0, 200))
+        
+        ## Sub frame 4 a2
+        self.subFrame4a2 = tk.Frame(self.subFrame4a, width = 410)
+        self.subFrame4a2.pack(side = tk.RIGHT, expand=False, anchor='center', pady = (5, 5)) 
+        
+        self.exitBtn4 = tk.Button(self.subFrame4a2, text = "Exit", command = self.exit, bg = "red", fg = "white", width = 20, height = 2, cursor = "hand2")
+        self.exitBtn4.pack(side = tk.RIGHT, pady = (5, 0), padx = (200, 0))
         
         ### Sub frame 4 b
-        self.subFrame4b = tk.Frame(self.frame4)
+        self.subFrame4b = tk.Canvas(self.frame4, bg = "white", cursor = "hand2", width = wth, height = hht)
         self.subFrame4b.pack(expand=True, anchor='center', pady = (10, 10))  
         
-        self.backBtn3 = tk.Button(self.subFrame4b, text = "Back", command = self.showFrame2, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
-        self.backBtn3.pack(pady = (0, 5))
+        self.mapDrawing(self.subFrame4b, wth, hht, cellEdge)
         
-        self.exitBtn4 = tk.Button(self.subFrame4b, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
-        self.exitBtn4.pack(pady = (5, 0))
+        ### Sub frame 4 c
+        self.subFrame4c = tk.Frame(self.frame4)
+        self.subFrame4c.pack(expand=True, anchor='center', pady = (15, 10))  
+        
+        if self.isHead:
+            self.backBtn3 = tk.Button(self.subFrame4c, text = "Previous", bg = "gray", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
+        else:
+            self.backBtn3 = tk.Button(self.subFrame4c, text = "Previous", command = self.prevMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
+        
+        if self.isTail:
+            self.backBtn3 = tk.Button(self.subFrame4c, text = "Next", bg = "gray", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
+        else:
+            self.backBtn3 = tk.Button(self.subFrame4c, text = "Next", command = self.nextMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
     
     def mapDrawing(self, canvas, wth, hht, edge):
         self.clearFrame(canvas)
@@ -237,13 +278,14 @@ class SystemGUI():
         drawOneQuater(canvas, self.list3rdQuater, edge, type=3)
         drawOneQuater(canvas, self.list4thQuater, edge, type=4)
         
-        # Draw top and right border
+        # Draw 4 directions' border
         canvas.create_line([(2, 0), (2, hht)], fill='black', tags='grid_line_w')
         canvas.create_line([(wth, 0), (wth, hht)], fill='black', tags='grid_line_w')
         canvas.create_line([(0, 2), (wth, 2)], fill='black', tags='grid_line_w')
         canvas.create_line([(0, hht), (wth, hht)], fill='black', tags='grid_line_w')
     
     def showFrame1(self):
+        self.isResetListForFrame4 = True
         self.unshowAllFrames()
         self.root.title("Delivery system")
         self.frame1.pack(expand=True, anchor='center')  
@@ -251,6 +293,9 @@ class SystemGUI():
         self.mainFrame()
 
     def showFrame2(self):
+        self.isResetListForFrame4 = True
+        self.isHead = True
+        self.isTail = False
         self.unshowAllFrames()
         self.root.title("Choose view frame")
         self.frame2.pack(expand=True, anchor='center')  
@@ -286,20 +331,20 @@ class SystemGUI():
         self.isSolvable = True
         
         self.listPath = []
-        self.listVerLine = [] # Các cạnh chung một S và G sẽ có cùng màu
-        self.numV = [] # Lưu số lượng cạnh dọc được thêm vào ở từng bước chạy
+        self.listVerLine = []
+        self.numV = []
         self.listHorLine = []
-        self.numH = [] # Lưu số lượng cạnh ngang được thêm vào ở từng bước chạy
+        self.numH = []
         self.list1stQuater = []
-        self.num1Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ nhất được thêm vào ở từng bước chạy
+        self.num1Q = []
         self.list2ndQuater = []
-        self.num2Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ hai được thêm vào ở từng bước chạy
+        self.num2Q = []
         self.list3rdQuater = []
-        self.num3Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ ba được thêm vào ở từng bước chạy
+        self.num3Q = []
         self.list4thQuater = []
-        self.num4Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ tư được thêm vào ở từng bước chạy
+        self.num4Q = []
         
-        self.listRemainVerLine = [] # Những cạnh chưa được thêm sẽ lưu ở đây
+        self.listRemainVerLine = []
         self.listRemainHorLine = [] 
         self.listRemain1Q = [] 
         self.listRemain2Q = [] 
@@ -386,7 +431,109 @@ class SystemGUI():
                     self.listHorLine.append([point, "green"])
                 elif self.listPath[index - 1][1] == point[1]:
                     self.listVerLine.append([point, "green"])
+        
         return True
+    
+    def moveContent(self, listA, listB):
+        while listA:
+            cur = listA.pop()
+            listB.insert(0, cur)
+            
+    def resetAllList(self):
+        self.moveContent(self.listHorLine, self.listRemainHorLine)
+        self.moveContent(self.listVerLine, self.listRemainVerLine)
+        self.moveContent(self.list1stQuater, self.listRemain1Q)
+        self.moveContent(self.list2ndQuater, self.listRemain2Q)
+        self.moveContent(self.list3rdQuater, self.listRemain3Q)
+        self.moveContent(self.list4thQuater, self.listRemain4Q)
+    
+    def prevMap(self):
+        cur = (0, 0)
+        isHead = True
+        if len(self.listVerLine) >= 1:
+            isHead = False
+            cur = self.listVerLine.pop() 
+            self.listRemainVerLine.insert(0, cur)
+        
+        if len(self.listHorLine) >= 1:
+            isHead = False
+            cur = self.listHorLine.pop() 
+            self.listRemainHorLine.insert(0, cur)
+            
+        if len(self.list1stQuater) >= 1:
+            isHead = False
+            cur = self.list1stQuater.pop() 
+            self.listRemain1Q.insert(0, cur)
+            
+        if len(self.list2ndQuater) >= 1:
+            isHead = False
+            cur = self.list2ndQuater.pop() 
+            self.listRemain2Q.insert(0, cur)
+            
+        if len(self.list3rdQuater) >= 1:
+            isHead = False
+            cur = self.list3rdQuater.pop() 
+            self.listRemain3Q.insert(0, cur)
+            
+        if len(self.list4thQuater) >= 1:
+            isHead = False
+            cur = self.list4thQuater.pop() 
+            self.listRemain4Q.insert(0, cur)
+            
+        self.isHead = isHead
+        if not (len(self.listRemainVerLine) == 0 
+                and len(self.listRemainHorLine) == 0 
+                and len(self.listRemain1Q) == 0 
+                and len(self.listRemain2Q) == 0
+                and len(self.listRemain3Q) == 0
+                and len(self.listRemain4Q) == 0):
+            self.isTail = False
+            
+        self.showFrame4()
+    
+    def nextMap(self):
+        cur = (0, 0)
+        isTail = True
+        if len(self.listRemainVerLine) >= 1:
+            isTail = False
+            cur = self.listRemainVerLine.pop(0) 
+            self.listVerLine.append(cur)
+        
+        if len(self.listRemainHorLine) >= 1:
+            isTail = False
+            cur = self.listRemainHorLine.pop(0) 
+            self.listHorLine.append(cur)
+            
+        if len(self.listRemain1Q) >= 1:
+            isTail = False
+            cur = self.listRemain1Q.pop() 
+            self.list1stQuater.append(cur)
+            
+        if len(self.listRemain2Q) >= 1:
+            isTail = False
+            cur = self.listRemain2Q.pop() 
+            self.list2ndQuater.append(cur)
+            
+        if len(self.listRemain3Q) >= 1:
+            isTail = False
+            cur = self.listRemain3Q.pop() 
+            self.list3rdQuater.append(cur)
+            
+        if len(self.listRemain4Q) >= 1:
+            isTail = False
+            cur = self.listRemain4Q.pop() 
+            self.list4thQuater.append(cur)
+            
+        self.isTail = isTail
+        if not (len(self.listVerLine) == 0 
+                and len(self.listHorLine) == 0 
+                and len(self.list1stQuater) == 0 
+                and len(self.list2ndQuater) == 0
+                and len(self.list3rdQuater) == 0
+                and len(self.list4thQuater) == 0):
+            self.isHead = False
+        
+        self.showFrame4()
         
     def entryOnFocus(self, event):
         if self.entry.get("1.0", tk.END).strip() == self.default_text:
