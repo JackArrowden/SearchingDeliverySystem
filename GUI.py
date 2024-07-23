@@ -15,7 +15,7 @@ from source_level_1.GBFS import GBFS
 def drawSquare(canvas, x, y, edge, **kwargs):
     canvas.create_rectangle(x * edge, y * edge, x * edge + edge, y * edge + edge, **kwargs)
     
-def drawSearchLines(canvas, array, edge,):
+def drawSearchLines(canvas, array, edge, isEnd):
     for index, point in enumerate(array):
         x = point[0][1]
         y = point[0][0]
@@ -26,8 +26,9 @@ def drawSearchLines(canvas, array, edge,):
             y = y + 1 / 2
             if index != 0:
                 canvas.create_line([(x * edge, y * edge), ((x + deltaX / 2) * edge, (y + deltaY / 2) * edge)], fill = point[1])
-            if index != len(array) - 2:
-                canvas.create_line([((x + deltaX / 2) * edge, (y + deltaY / 2) * edge), ((x + deltaX) * edge, (y + deltaY) * edge)], fill = point[1])
+            if index == len(array) - 2 and isEnd == 0:
+                continue
+            canvas.create_line([((x + deltaX / 2) * edge, (y + deltaY / 2) * edge), ((x + deltaX) * edge, (y + deltaY) * edge)], fill = point[1])
 
 class SystemGUI():
     def __init__(self, root):
@@ -89,31 +90,42 @@ class SystemGUI():
         self.exitBtn1.pack(pady = (5, 10))
         
     def chooseViewFrame(self): #### Frame 2
+        ### Frame a
+        self.subFrame2a = tk.Frame(self.frame2)
+        self.subFrame2a.pack(expand=True, anchor='center', pady = (0, 80)) 
+        
         if not self.isSolvable:
-            self.unsolvableFrame = tk.Canvas(self.frame2, bg = "#F0F0F0", width = 600, height = 400)
+            self.unsolvableFrame = tk.Canvas(self.subFrame2a, bg = "#F0F0F0", width = 600, height = 400)
             self.unsolvableFrame.pack(expand=True, anchor='center', pady = (10, 10))     
             self.unsolvableFrame.create_text(300, 200, text = "This problem is unsolvable!", fill="black", font = self.font2)
-        
-        ## Back button 1
-        self.backBtn1 = tk.Button(self.frame2, text = "Back", command = self.backFromFrame2, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
-        self.backBtn1.pack(pady = (5, 10))
-        
-        if (self.isSolvable):
+        else:
+            self.chooseView = tk.Canvas(self.subFrame2a, bg = "#F0F0F0", width = 600, height = 50)
+            self.chooseView.pack(expand=True, anchor='center', pady = (10, 10))     
+            self.chooseView.create_text(300, 10, text = "Choose a type of view", fill="black", font = self.font2)
+            
             ## Final result
-            self.finalResultBtn = tk.Button(self.frame2, text = "Show final result", command = self.showFrame3, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+            self.finalResultBtn = tk.Button(self.subFrame2a, text = "Show final result", command = self.showFrame3, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
             self.finalResultBtn.pack(pady = (10, 10))
             
             ## Step by step manually
-            self.stepByStepManuBtn = tk.Button(self.frame2, text = "Show step by step manually", command = self.showFrame4, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+            self.stepByStepManuBtn = tk.Button(self.subFrame2a, text = "Show step by step manually", command = self.showFrame4, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
             self.stepByStepManuBtn.pack(pady = (10, 10))
             
             ## Step by step automatically
-            self.stepByStepAutoBtn = tk.Button(self.frame2, text = "Show step by step automatically", command = self.showFrame4, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+            self.stepByStepAutoBtn = tk.Button(self.subFrame2a, text = "Show step by step automatically", command = self.showFrame4, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
             self.stepByStepAutoBtn.pack(pady = (10, 10))
-
+            
+        ### Frame b
+        self.subFrame2b = tk.Frame(self.frame2)
+        self.subFrame2b.pack(expand=True, anchor='center', pady = (20, 0)) 
+            
+        ## Back button 1
+        self.backBtn1 = tk.Button(self.subFrame2b, text = "Back", command = self.backFromFrame2, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+        self.backBtn1.pack(side = tk.LEFT, pady = (10, 10), padx = (0, 30))
+        
         ## Exit button 2
-        self.exitBtn2 = tk.Button(self.frame2, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
-        self.exitBtn2.pack(pady = (10, 5))
+        self.exitBtn2 = tk.Button(self.subFrame2b, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+        self.exitBtn2.pack(side = tk.LEFT, pady = (10, 10), padx = (30, 0))
     
     def chooseAlgoFrame(self):
         ### Frame a
@@ -129,23 +141,23 @@ class SystemGUI():
         self.subFrame5b1 = tk.Frame(self.subFrame5b)
         self.subFrame5b1.pack(expand=True, anchor='center', pady = (10, 0)) 
         
-        self.algoBtn1 = tk.Button(self.subFrame5b1, text = "Breadth first search", command = lambda : self.runAlgo(1), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn1 = tk.Button(self.subFrame5b1, text = "Breadth first search", command = lambda : self.runAlgo(1), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
         self.algoBtn1.pack(side = tk.LEFT, pady = (10, 0), padx = (10, 12))
         
-        self.algoBtn2 = tk.Button(self.subFrame5b1, text = "Depth first search", command = lambda : self.runAlgo(2), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn2 = tk.Button(self.subFrame5b1, text = "Depth first search", command = lambda : self.runAlgo(2), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
         self.algoBtn2.pack(side = tk.LEFT, pady = (10, 0), padx = (12, 12))
 
-        self.algoBtn3 = tk.Button(self.subFrame5b1, text = "Uniform cost search", command = lambda : self.runAlgo(3), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn3 = tk.Button(self.subFrame5b1, text = "Uniform cost search", command = lambda : self.runAlgo(3), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
         self.algoBtn3.pack(side = tk.LEFT, pady = (10, 0), padx = (12, 10))
         
         ## Frame b2
         self.subFrame5b2 = tk.Frame(self.subFrame5b)
         self.subFrame5b2.pack(expand=True, anchor='center', pady = (10, 12)) 
         
-        self.algoBtn4 = tk.Button(self.subFrame5b2, text = "Greedy best first search", command = lambda : self.runAlgo(4), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn4 = tk.Button(self.subFrame5b2, text = "Greedy best first search", command = lambda : self.runAlgo(4), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
         self.algoBtn4.pack(side = tk.LEFT, pady = (10, 10), padx = (12, 10))
 
-        self.algoBtn5 = tk.Button(self.subFrame5b2, text = "A* search", command = lambda : self.runAlgo(5), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn5 = tk.Button(self.subFrame5b2, text = "A* search", command = lambda : self.runAlgo(5), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
         self.algoBtn5.pack(side = tk.LEFT, pady = (10, 10), padx = (10, 10))
         
         ### Frame c
@@ -206,6 +218,7 @@ class SystemGUI():
         if self.isResetList:
             self.isResetList = False
             self.moveContent(self.listLine, self.listRemainLine)
+            self.listLine.append(self.listRemainLine.pop(0))
             
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
@@ -229,7 +242,7 @@ class SystemGUI():
         self.subFrame4a2 = tk.Frame(self.subFrame4a, width = 410)
         self.subFrame4a2.pack(side = tk.RIGHT, expand=False, anchor='center', pady = (5, 5)) 
         
-        self.exitBtn4 = tk.Button(self.subFrame4a2, text = "Exit", command = self.exit, bg = "#FF4B4B", fg = "black", width = 20, height = 2, cursor = "hand2")
+        self.exitBtn4 = tk.Button(self.subFrame4a2, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
         self.exitBtn4.pack(side = tk.RIGHT, pady = (5, 0), padx = (200, 0))
         
         ### Sub frame 4 b
@@ -295,7 +308,7 @@ class SystemGUI():
             drawSquare(canvas, fPoint[1], fPoint[0], edge, fill="yellow", outline="black")
             canvas.create_text(fPoint[1] * edge + edge / 2, fPoint[0] * edge + edge / 2, text = name, fill="black")
  
-        drawSearchLines(canvas, self.listLine, edge)
+        drawSearchLines(canvas, self.listLine, edge, len(self.listRemainLine))
         
         # Draw 4 directions' border
         canvas.create_line([(2, 0), (2, hht)], fill='black', tags='grid_line_w')
@@ -449,14 +462,13 @@ class SystemGUI():
     
     def prevMap(self):
         cur = (0, 0)
-        isHead = True
             
-        if len(self.listLine) >= 1:
-            isHead = False
+        if len(self.listLine) >= 2:
             cur = self.listLine.pop()
             self.listRemainLine.insert(0, cur)
             
-        self.isHead = isHead
+        if len(self.listLine) <= 1:
+            self.isHead = True
         if not len(self.listRemainLine) == 0:
             self.isTail = False
             
@@ -464,14 +476,13 @@ class SystemGUI():
     
     def nextMap(self):
         cur = (0, 0)
-        isTail = True
         
         if len(self.listRemainLine) >= 1:
-            isTail = False
             cur = self.listRemainLine.pop(0)
             self.listLine.append(cur)
             
-        self.isTail = isTail
+        if len(self.listRemainLine) == 0:
+            self.isTail = True
         if not len(self.listLine) == 0:
             self.isHead = False
         
