@@ -18,18 +18,19 @@
 ## Phase 2: 3 days - deadline: 21/7/2024
 - [x] GUI: A
 - [x] Another algorithm to run level 2 and 3: C
-- [ ] Generate test cases for level 2 and 3: D
+- [x] Generate test cases for level 2 and 3: D
 - [x] Write report about BFS and GBFS: B
 
 ## Phase 3: 3 days - deadline: 24/7/2024
 - [ ] GUI level 4: A
 - [ ] Another algorithm to run level 4: A, B, C, D
-- [ ] Generate test cases for level 4: A
+- [ ] Generate test cases for level 4: D
 - [ ] Write report about DFS and UCS: B
 - [ ] Write report about Best-first-search and A*: D
 - [ ] Write report about file handling functions: A
 - [ ] Write report for new algorithm: C
 
 ## Phase 4: 4 days - deadline: 28/7/2024
-- [ ] Report
-- [ ] Video demo
+- [ ] Report summary: A
+- [ ] Video demo recording: B
+- [ ] Video editing

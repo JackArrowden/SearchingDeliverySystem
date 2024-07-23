@@ -1,65 +1,46 @@
+# Supporting library
 import problem
 import FileHandler
 import tkinter as tk
 import FileHandler
+
+# Searching algorithm
 from UCS_level_2_3 import UCS_level_2_3
-
-def round_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
-    points = [x1+radius, y1,
-              x1+radius, y1,
-              x2-radius, y1,
-              x2-radius, y1,
-              x2, y1,
-              x2, y1+radius,
-              x2, y1+radius,
-              x2, y2-radius,
-              x2, y2-radius,
-              x2, y2,
-              x2-radius, y2,
-              x2-radius, y2,
-              x1+radius, y2,
-              x1+radius, y2,
-              x1, y2,
-              x1, y2-radius,
-              x1, y2-radius,
-              x1, y1+radius,
-              x1, y1+radius,
-              x1, y1]
-
-    return canvas.create_polygon(points, **kwargs, smooth=True)
+from source_level_1.A_star import a_star_search
+from source_level_1.BFS import BFS
+from source_level_1.DFS import DFS
+from source_level_1.UCS import UCS
+from source_level_1.GBFS import GBFS
 
 def drawSquare(canvas, x, y, edge, **kwargs):
     canvas.create_rectangle(x * edge, y * edge, x * edge + edge, y * edge + edge, **kwargs)
     
-def drawOneQuater(canvas, array, edge, type):
-    x = None
-    y = None
-    coorVDict = {
-        1 : [lambda x : (x + 1 / 2) * edge, lambda y : y * edge, lambda x : (x + 1 / 2) * edge, lambda y :  (y + 1 / 2) * edge],
-        2 : [lambda x : (x + 1 / 2) * edge, lambda y : y * edge, lambda x : (x + 1 / 2) * edge, lambda y : (y + 1 / 2) * edge],
-        3 : [lambda x : (x + 1 / 2) * edge, lambda y : (y + 1 / 2) * edge, lambda x : (x + 1 / 2) * edge, lambda y : (y + 1) * edge],
-        4 : [lambda x : (x + 1 / 2) * edge, lambda y : (y + 1 / 2) * edge, lambda x : (x + 1 / 2) * edge, lambda y : (y + 1) * edge]
-    }
-    coorHDict = {
-        1 : [lambda x : (x + 1 / 2) * edge, lambda y : (y + 1 / 2) * edge, lambda x : (x + 1) * edge, lambda y : (y + 1 / 2) * edge],
-        2 : [lambda x : x * edge, lambda y : (y + 1 / 2) * edge, lambda x : (x + 1 / 2) * edge, lambda y : (y + 1 / 2) * edge],
-        3 : [lambda x : x * edge, lambda y : (y + 1 / 2) * edge, lambda x : (x + 1 / 2) * edge, lambda y : (y + 1 / 2) * edge],
-        4 : [lambda x : (x + 1 / 2) * edge, lambda y : (y + 1 / 2) * edge, lambda x : (x + 1) * edge, lambda y : (y + 1 / 2) * edge]
-    }
-    for point in array:
+def drawSearchLines(canvas, array, edge,):
+    for index, point in enumerate(array):
         x = point[0][1]
         y = point[0][0]
-        canvas.create_line([(coorVDict[type][0](x), coorVDict[type][1](y)), (coorVDict[type][2](x), coorVDict[type][3](y))], fill = point[1])
-        canvas.create_line([(coorHDict[type][0](x), coorHDict[type][1](y)), (coorHDict[type][2](x), coorHDict[type][3](y))], fill = point[1])
+        if index + 1 < len(array):
+            deltaX = array[index + 1][0][1] - x
+            deltaY = array[index + 1][0][0] - y
+            x = x + 1 / 2
+            y = y + 1 / 2
+            if index != 0:
+                canvas.create_line([(x * edge, y * edge), ((x + deltaX / 2) * edge, (y + deltaY / 2) * edge)], fill = point[1])
+            if index != len(array) - 2:
+                canvas.create_line([((x + deltaX / 2) * edge, (y + deltaY / 2) * edge), ((x + deltaX) * edge, (y + deltaY) * edge)], fill = point[1])
 
 class SystemGUI():
     def __init__(self, root):
         self.root = root
         self.root.geometry('820x620')
         self.root.title("Delivery system")
+        self.font1 = ("Bahnschrift Light SemiCondensed", 12)
+        self.font2 = ("Bahnschrift Light SemiCondensed", 20)
+        self.root.option_add("*Font", self.font1)
+        
         self.default_text = "Enter input file..."
-        self.text1 = "The file's name must not be left blank"
-        self.text2 = "An error occur while opening input file\nPlease enter another file's name"
+        self.text1 = "The file's name must not be left blank!"
+        self.text2 = "An error occur while opening input file\nPlease enter another file's name..."
         self.root.protocol("WM_DELETE_WINDOW", self.exit)    
             
         self.fileName = ""
@@ -68,36 +49,21 @@ class SystemGUI():
         self.listGs = []
         self.listFs = []
         self.isSolvable = True
+        self.isLevel1 = False
         
         self.isHead = True
         self.isTail = False
-        self.isResetListForFrame4 = True
+        self.isResetList = True
         
         self.listPath = []
-        self.listVerLine = [] # Các cạnh chung một S và G sẽ có cùng màu
-        self.numV = [] # Lưu số lượng cạnh dọc được thêm vào ở từng bước chạy
-        self.listHorLine = []
-        self.numH = [] # Lưu số lượng cạnh ngang được thêm vào ở từng bước chạy
-        self.list1stQuater = []
-        self.num1Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ nhất được thêm vào ở từng bước chạy
-        self.list2ndQuater = []
-        self.num2Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ hai được thêm vào ở từng bước chạy
-        self.list3rdQuater = []
-        self.num3Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ ba được thêm vào ở từng bước chạy
-        self.list4thQuater = []
-        self.num4Q = [] # Lưu số lượng cạnh tạo ra góc phần tư thứ tư được thêm vào ở từng bước chạy
-        
-        self.listRemainVerLine = [] # Những cạnh chưa được thêm sẽ lưu ở đây
-        self.listRemainHorLine = [] 
-        self.listRemain1Q = [] 
-        self.listRemain2Q = [] 
-        self.listRemain3Q = [] 
-        self.listRemain4Q = [] 
+        self.listLine = []
+        self.listRemainLine = []
         
         self.frame1 = tk.Frame(self.root)
         self.frame2 = tk.Frame(self.root)
         self.frame3 = tk.Frame(self.root)
         self.frame4 = tk.Frame(self.root)
+        self.frame5 = tk.Frame(self.root)
         
         self.showFrame1()
         
@@ -123,29 +89,95 @@ class SystemGUI():
         self.exitBtn1.pack(pady = (5, 10))
         
     def chooseViewFrame(self): #### Frame 2
+        if not self.isSolvable:
+            self.unsolvableFrame = tk.Canvas(self.frame2, bg = "#F0F0F0", width = 600, height = 400)
+            self.unsolvableFrame.pack(expand=True, anchor='center', pady = (10, 10))     
+            self.unsolvableFrame.create_text(300, 200, text = "This problem is unsolvable!", fill="black", font = self.font2)
+        
         ## Back button 1
-        self.backBtn1 = tk.Button(self.frame2, text = "Back", command = self.resetProblem, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+        self.backBtn1 = tk.Button(self.frame2, text = "Back", command = self.backFromFrame2, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
         self.backBtn1.pack(pady = (5, 10))
         
-        ## Final result
-        self.finalResultBtn = tk.Button(self.frame2, text = "Show final result", command = self.showFrame3, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
-        self.finalResultBtn.pack(pady = (10, 10))
-        
-        ## Step by step
-        self.stepByStepBtn = tk.Button(self.frame2, text = "Show step by step", command = self.showFrame4, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
-        self.stepByStepBtn.pack(pady = (10, 10))
+        if (self.isSolvable):
+            ## Final result
+            self.finalResultBtn = tk.Button(self.frame2, text = "Show final result", command = self.showFrame3, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+            self.finalResultBtn.pack(pady = (10, 10))
+            
+            ## Step by step manually
+            self.stepByStepManuBtn = tk.Button(self.frame2, text = "Show step by step manually", command = self.showFrame4, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+            self.stepByStepManuBtn.pack(pady = (10, 10))
+            
+            ## Step by step automatically
+            self.stepByStepAutoBtn = tk.Button(self.frame2, text = "Show step by step automatically", command = self.showFrame4, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+            self.stepByStepAutoBtn.pack(pady = (10, 10))
 
         ## Exit button 2
         self.exitBtn2 = tk.Button(self.frame2, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
         self.exitBtn2.pack(pady = (10, 5))
     
+    def chooseAlgoFrame(self):
+        ### Frame a
+        self.subFrame5a = tk.Canvas(self.frame5, bg = "#F0F0F0", width = 600, height = 50)
+        self.subFrame5a.pack(expand=True, anchor='center', pady = (10, 0))     
+        self.subFrame5a.create_text(300, 10, text = "Choose an algorithm to run", fill = "black", font = self.font2)
+        
+        ### Frame b
+        self.subFrame5b = tk.Frame(self.frame5)
+        self.subFrame5b.pack(expand=True, anchor='center', pady = (0, 80)) 
+        
+        ## Frame b1
+        self.subFrame5b1 = tk.Frame(self.subFrame5b)
+        self.subFrame5b1.pack(expand=True, anchor='center', pady = (10, 0)) 
+        
+        self.algoBtn1 = tk.Button(self.subFrame5b1, text = "Breadth first search", command = lambda : self.runAlgo(1), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn1.pack(side = tk.LEFT, pady = (10, 0), padx = (10, 12))
+        
+        self.algoBtn2 = tk.Button(self.subFrame5b1, text = "Depth first search", command = lambda : self.runAlgo(2), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn2.pack(side = tk.LEFT, pady = (10, 0), padx = (12, 12))
+
+        self.algoBtn3 = tk.Button(self.subFrame5b1, text = "Uniform cost search", command = lambda : self.runAlgo(3), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn3.pack(side = tk.LEFT, pady = (10, 0), padx = (12, 10))
+        
+        ## Frame b2
+        self.subFrame5b2 = tk.Frame(self.subFrame5b)
+        self.subFrame5b2.pack(expand=True, anchor='center', pady = (10, 12)) 
+        
+        self.algoBtn4 = tk.Button(self.subFrame5b2, text = "Greedy best first search", command = lambda : self.runAlgo(4), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn4.pack(side = tk.LEFT, pady = (10, 10), padx = (12, 10))
+
+        self.algoBtn5 = tk.Button(self.subFrame5b2, text = "A* search", command = lambda : self.runAlgo(5), bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
+        self.algoBtn5.pack(side = tk.LEFT, pady = (10, 10), padx = (10, 10))
+        
+        ### Frame c
+        self.subFrame5c = tk.Frame(self.frame5)
+        self.subFrame5c.pack(expand=True, anchor='center', pady = (10, 10)) 
+        
+        ## Back button 1
+        self.backBtn4 = tk.Button(self.subFrame5c, text = "Back", command = self.resetProblem, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+        self.backBtn4.pack(pady = (5, 10))
+
+        ## Exit button 2
+        self.exitBtn5 = tk.Button(self.subFrame5c, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+        self.exitBtn5.pack(pady = (10, 5))
+        return
+    
+    def runAlgo(self, numAlgo):
+        listAlgo = {
+            1 : BFS,
+            2 : DFS,
+            3 : UCS,
+            4 : GBFS,
+            5 : a_star_search
+        }
+        self.listPath = listAlgo[numAlgo](self.problem)
+        if self.listPath is None:
+            self.isSolvable = False
+        else:
+            self.getListEdgePath()
+        self.showFrame2()
+    
     def finalResultFrame(self): #### Frame 3
-        self.moveContent(self.listRemainHorLine, self.listHorLine)
-        self.moveContent(self.listRemainVerLine, self.listVerLine)
-        self.moveContent(self.listRemain1Q, self.list1stQuater)
-        self.moveContent(self.listRemain2Q, self.list2ndQuater)
-        self.moveContent(self.listRemain3Q, self.list3rdQuater)
-        self.moveContent(self.listRemain4Q, self.list4thQuater)
+        self.moveContent(self.listRemainLine, self.listLine)
         
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
@@ -155,7 +187,7 @@ class SystemGUI():
         hht = cellEdge * len(self.map)
         
         ### Sub frame 3 a
-        self.subFrame3a = tk.Canvas(self.frame3, bg = "white", cursor = "hand2", width = wth, height = hht)
+        self.subFrame3a = tk.Canvas(self.frame3, bg = "white", width = wth, height = hht)
         self.subFrame3a.pack(expand=True, anchor='center', pady = (10, 10))  
         
         self.mapDrawing(self.subFrame3a, wth, hht, cellEdge)
@@ -171,10 +203,10 @@ class SystemGUI():
         self.exitBtn3.pack(pady = (5, 0))
         
     def stepByStepFrame(self): #### Frame 4        
-        if self.isResetListForFrame4:
-            self.isResetListForFrame4 = False
-            self.resetAllList()
-
+        if self.isResetList:
+            self.isResetList = False
+            self.moveContent(self.listLine, self.listRemainLine)
+            
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
         
@@ -197,11 +229,11 @@ class SystemGUI():
         self.subFrame4a2 = tk.Frame(self.subFrame4a, width = 410)
         self.subFrame4a2.pack(side = tk.RIGHT, expand=False, anchor='center', pady = (5, 5)) 
         
-        self.exitBtn4 = tk.Button(self.subFrame4a2, text = "Exit", command = self.exit, bg = "red", fg = "white", width = 20, height = 2, cursor = "hand2")
+        self.exitBtn4 = tk.Button(self.subFrame4a2, text = "Exit", command = self.exit, bg = "#FF4B4B", fg = "black", width = 20, height = 2, cursor = "hand2")
         self.exitBtn4.pack(side = tk.RIGHT, pady = (5, 0), padx = (200, 0))
         
         ### Sub frame 4 b
-        self.subFrame4b = tk.Canvas(self.frame4, bg = "white", cursor = "hand2", width = wth, height = hht)
+        self.subFrame4b = tk.Canvas(self.frame4, bg = "white", width = wth, height = hht)
         self.subFrame4b.pack(expand=True, anchor='center', pady = (10, 10))  
         
         self.mapDrawing(self.subFrame4b, wth, hht, cellEdge)
@@ -211,14 +243,14 @@ class SystemGUI():
         self.subFrame4c.pack(expand=True, anchor='center', pady = (15, 10))  
         
         if self.isHead:
-            self.backBtn3 = tk.Button(self.subFrame4c, text = "Previous", bg = "gray", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.backBtn3 = tk.Button(self.subFrame4c, state = "disabled", text = "Previous", bg = "lightgray", fg = "white", width = 25, height = 2)
             self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
         else:
             self.backBtn3 = tk.Button(self.subFrame4c, text = "Previous", command = self.prevMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
             self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
         
         if self.isTail:
-            self.backBtn3 = tk.Button(self.subFrame4c, text = "Next", bg = "gray", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.backBtn3 = tk.Button(self.subFrame4c, state = "disabled", text = "Next", bg = "lightgray", fg = "white", width = 25, height = 2)
             self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
         else:
             self.backBtn3 = tk.Button(self.subFrame4c, text = "Next", command = self.nextMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
@@ -262,21 +294,8 @@ class SystemGUI():
             name = "F" + str(index + 1)
             drawSquare(canvas, fPoint[1], fPoint[0], edge, fill="yellow", outline="black")
             canvas.create_text(fPoint[1] * edge + edge / 2, fPoint[0] * edge + edge / 2, text = name, fill="black")
-        
-        # Draw search lines
-        for vPoint in self.listVerLine:
-            canvas.create_line([(vPoint[0][1] * edge + edge / 2, vPoint[0][0] * edge), 
-                                         (vPoint[0][1] * edge + edge / 2, vPoint[0][0] * edge + edge)], 
-                                        fill=vPoint[1])
-        for hPoint in self.listHorLine:
-            canvas.create_line([(hPoint[0][1] * edge, hPoint[0][0] * edge + edge / 2), 
-                                         (hPoint[0][1] * edge + edge, hPoint[0][0] * edge + edge / 2)], 
-                                        fill=hPoint[1])
-        
-        drawOneQuater(canvas, self.list1stQuater, edge, type=1)
-        drawOneQuater(canvas, self.list2ndQuater, edge, type=2)
-        drawOneQuater(canvas, self.list3rdQuater, edge, type=3)
-        drawOneQuater(canvas, self.list4thQuater, edge, type=4)
+ 
+        drawSearchLines(canvas, self.listLine, edge)
         
         # Draw 4 directions' border
         canvas.create_line([(2, 0), (2, hht)], fill='black', tags='grid_line_w')
@@ -285,7 +304,7 @@ class SystemGUI():
         canvas.create_line([(0, hht), (wth, hht)], fill='black', tags='grid_line_w')
     
     def showFrame1(self):
-        self.isResetListForFrame4 = True
+        self.isResetList = True
         self.unshowAllFrames()
         self.root.title("Delivery system")
         self.frame1.pack(expand=True, anchor='center')  
@@ -293,14 +312,22 @@ class SystemGUI():
         self.mainFrame()
 
     def showFrame2(self):
-        self.isResetListForFrame4 = True
+        self.isResetList = True
         self.isHead = True
         self.isTail = False
         self.unshowAllFrames()
         self.root.title("Choose view frame")
         self.frame2.pack(expand=True, anchor='center')  
         self.clearFrame(self.frame2)  
+        self.moveContent(self.listLine, self.listRemainLine)
         self.chooseViewFrame()
+        
+    def backFromFrame2(self):
+        if self.isLevel1:
+            self.eraseAlgo()
+            self.showFrame5()
+        else:
+            self.resetProblem()
         
     def showFrame3(self):
         self.unshowAllFrames()
@@ -315,12 +342,20 @@ class SystemGUI():
         self.frame4.pack(expand=True, anchor='center')
         self.clearFrame(self.frame4)  
         self.stepByStepFrame()
+       
+    def showFrame5(self):
+        self.unshowAllFrames()
+        self.root.title("Choose algorithm")
+        self.frame5.pack(expand=True, anchor='center')
+        self.clearFrame(self.frame5)  
+        self.chooseAlgoFrame()
         
     def unshowAllFrames(self):
         self.frame1.pack_forget()
         self.frame2.pack_forget()
         self.frame3.pack_forget()
         self.frame4.pack_forget()
+        self.frame5.pack_forget()
     
     def resetProblem(self):
         self.fileName = ""
@@ -329,29 +364,27 @@ class SystemGUI():
         self.listGs = []
         self.listFs = []
         self.isSolvable = True
+        self.isLevel1 = False
+        
+        self.isHead = True
+        self.isTail = False
+        self.isResetList = True
         
         self.listPath = []
-        self.listVerLine = []
-        self.numV = []
-        self.listHorLine = []
-        self.numH = []
-        self.list1stQuater = []
-        self.num1Q = []
-        self.list2ndQuater = []
-        self.num2Q = []
-        self.list3rdQuater = []
-        self.num3Q = []
-        self.list4thQuater = []
-        self.num4Q = []
-        
-        self.listRemainVerLine = []
-        self.listRemainHorLine = [] 
-        self.listRemain1Q = [] 
-        self.listRemain2Q = [] 
-        self.listRemain3Q = [] 
-        self.listRemain4Q = []  
+        self.listLine = []
+        self.listRemainLine = []
         
         self.showFrame1()   
+        
+    def eraseAlgo(self):
+        self.isSolvable = True
+        self.isHead = True
+        self.isTail = False
+        self.isResetList = True
+        
+        self.listPath = []
+        self.listLine = []
+        self.listRemainLine = []
         
     def clearFrame(self, frame):
         for widget in frame.winfo_children():
@@ -369,7 +402,6 @@ class SystemGUI():
             self.entry.insert("1.0", self.text2)  
             self.entry.mark_set("insert", "1.0")
         else:
-            self.showFrame2()
             resultRead = FileHandler.readInput(self.fileName)
             self.map = resultRead[0]
             self.listSs = resultRead[1]
@@ -377,116 +409,55 @@ class SystemGUI():
             self.listFs = resultRead[5] if len(resultRead) == 6 else []
             if len(resultRead) == 3:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs)
-                # Choose an algorithm to run
-                # self.listPath = UCS_level_2_3(self.problem)
+                self.isLevel1 = True
+                self.showFrame5()
             elif len(resultRead) == 4:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3])
                 self.listPath = UCS_level_2_3(self.problem)
-                if self.getListEdgePath() == False:
+                if self.listPath is None:
                     self.isSolvable = False
-            elif len(resultRead == 6) and len(self.listSs) == 1:
-                self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4], resultRead[5])
+                else:
+                    self.getListEdgePath()
+                self.showFrame2()
+            elif len(resultRead) == 6 and len(self.listSs) == 1:
+                self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
                 self.listPath = UCS_level_2_3(self.problem)
+                if self.listPath is None:
+                    self.isSolvable = False
+                else:
+                    self.getListEdgePath()
+                self.showFrame2()
             else:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs)
                 # Choose another algorithm to run
                 # self.listPath = UCS_level_2_3(self.problem)
-        
+                self.showFrame2()
+
     def getListEdgePath(self):
         curLen = len(self.listPath)
         if curLen == 0:
             return False
         
-        for index, point in enumerate(self.listPath):
-            if index == 0 or index == curLen - 1:
-                continue
-            if index + 1 < curLen: # Check whether this is an edge that creates an angle in the path
-                if self.listPath[index - 1][0] == point[0] == self.listPath[index + 1][0]:
-                    self.listHorLine.append([point, "green"])
-                elif self.listPath[index - 1][1] == point[1] == self.listPath[index + 1][1]:
-                    self.listVerLine.append([point, "green"])
-                else:
-                    if ((self.listPath[index - 1][0] == point[0] - 1 
-                            and point[1] + 1 == self.listPath[index + 1][1]) 
-                        or (self.listPath[index - 1][1] == point[1] + 1 
-                            and point[0] - 1 == self.listPath[index + 1][0])):
-                        self.list1stQuater.append([point, "green"])
-                    elif ((self.listPath[index - 1][0] == point[0] - 1 
-                            and point[1] - 1 == self.listPath[index + 1][1]) 
-                        or (self.listPath[index - 1][1] == point[1] - 1 
-                            and point[0] - 1 == self.listPath[index + 1][0])):
-                        self.list2ndQuater.append([point, "green"])
-                    elif ((self.listPath[index - 1][0] == point[0] + 1 
-                            and point[1] - 1 == self.listPath[index + 1][1]) 
-                        or (self.listPath[index - 1][1] == point[1] - 1 
-                            and point[0] + 1 == self.listPath[index + 1][0])):
-                        self.list3rdQuater.append([point, "green"])
-                    elif ((self.listPath[index - 1][0] == point[0] + 1 
-                            and point[1] + 1 == self.listPath[index + 1][1]) 
-                        or (self.listPath[index - 1][1] == point[1] + 1 
-                            and point[0] + 1 == self.listPath[index + 1][0])):
-                        self.list4thQuater.append([point, "green"])
-            else:
-                if self.listPath[index - 1][0] == point[0]:
-                    self.listHorLine.append([point, "green"])
-                elif self.listPath[index - 1][1] == point[1]:
-                    self.listVerLine.append([point, "green"])
-        
+        for point in self.listPath:
+            self.listLine.append([point, "green"])
         return True
     
     def moveContent(self, listA, listB):
         while listA:
             cur = listA.pop()
             listB.insert(0, cur)
-            
-    def resetAllList(self):
-        self.moveContent(self.listHorLine, self.listRemainHorLine)
-        self.moveContent(self.listVerLine, self.listRemainVerLine)
-        self.moveContent(self.list1stQuater, self.listRemain1Q)
-        self.moveContent(self.list2ndQuater, self.listRemain2Q)
-        self.moveContent(self.list3rdQuater, self.listRemain3Q)
-        self.moveContent(self.list4thQuater, self.listRemain4Q)
     
     def prevMap(self):
         cur = (0, 0)
         isHead = True
-        if len(self.listVerLine) >= 1:
-            isHead = False
-            cur = self.listVerLine.pop() 
-            self.listRemainVerLine.insert(0, cur)
-        
-        if len(self.listHorLine) >= 1:
-            isHead = False
-            cur = self.listHorLine.pop() 
-            self.listRemainHorLine.insert(0, cur)
             
-        if len(self.list1stQuater) >= 1:
+        if len(self.listLine) >= 1:
             isHead = False
-            cur = self.list1stQuater.pop() 
-            self.listRemain1Q.insert(0, cur)
-            
-        if len(self.list2ndQuater) >= 1:
-            isHead = False
-            cur = self.list2ndQuater.pop() 
-            self.listRemain2Q.insert(0, cur)
-            
-        if len(self.list3rdQuater) >= 1:
-            isHead = False
-            cur = self.list3rdQuater.pop() 
-            self.listRemain3Q.insert(0, cur)
-            
-        if len(self.list4thQuater) >= 1:
-            isHead = False
-            cur = self.list4thQuater.pop() 
-            self.listRemain4Q.insert(0, cur)
+            cur = self.listLine.pop()
+            self.listRemainLine.insert(0, cur)
             
         self.isHead = isHead
-        if not (len(self.listRemainVerLine) == 0 
-                and len(self.listRemainHorLine) == 0 
-                and len(self.listRemain1Q) == 0 
-                and len(self.listRemain2Q) == 0
-                and len(self.listRemain3Q) == 0
-                and len(self.listRemain4Q) == 0):
+        if not len(self.listRemainLine) == 0:
             self.isTail = False
             
         self.showFrame4()
@@ -494,43 +465,14 @@ class SystemGUI():
     def nextMap(self):
         cur = (0, 0)
         isTail = True
-        if len(self.listRemainVerLine) >= 1:
-            isTail = False
-            cur = self.listRemainVerLine.pop(0) 
-            self.listVerLine.append(cur)
         
-        if len(self.listRemainHorLine) >= 1:
+        if len(self.listRemainLine) >= 1:
             isTail = False
-            cur = self.listRemainHorLine.pop(0) 
-            self.listHorLine.append(cur)
-            
-        if len(self.listRemain1Q) >= 1:
-            isTail = False
-            cur = self.listRemain1Q.pop() 
-            self.list1stQuater.append(cur)
-            
-        if len(self.listRemain2Q) >= 1:
-            isTail = False
-            cur = self.listRemain2Q.pop() 
-            self.list2ndQuater.append(cur)
-            
-        if len(self.listRemain3Q) >= 1:
-            isTail = False
-            cur = self.listRemain3Q.pop() 
-            self.list3rdQuater.append(cur)
-            
-        if len(self.listRemain4Q) >= 1:
-            isTail = False
-            cur = self.listRemain4Q.pop() 
-            self.list4thQuater.append(cur)
+            cur = self.listRemainLine.pop(0)
+            self.listLine.append(cur)
             
         self.isTail = isTail
-        if not (len(self.listVerLine) == 0 
-                and len(self.listHorLine) == 0 
-                and len(self.list1stQuater) == 0 
-                and len(self.list2ndQuater) == 0
-                and len(self.list3rdQuater) == 0
-                and len(self.list4thQuater) == 0):
+        if not len(self.listLine) == 0:
             self.isHead = False
         
         self.showFrame4()
@@ -556,6 +498,8 @@ class SystemGUI():
     def exit(self):
         self.root.destroy()
 
+# ./test_level_3/input5_level3.txt
+# ./test_level_1/input5_level1.txt
 if __name__ == "__main__":
     root = tk.Tk()
     app = SystemGUI(root)

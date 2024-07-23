@@ -23,19 +23,3 @@ def GBFS(problem: Problem):
                 frontier.append(child)
 
     return -1
-
-# This is a test, should not be printed unless this file is run directly
-matrix =   [[0, 0, 0, 0, -1, -1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, -1, 0, -1],
-            [0, 0, -1, -1, -1, 0, 0, -1, 0, -1],
-            [0, 0, 0, 0, -1, 0, 0, -1, 0, 0],
-            [0, 0, -1, -1, -1, 0, 0, -1, -1, 0],
-            [1, 0, -1, 0, 0, 0, 0, 0, -1, 0],
-            [0, 0, -2, 0, -1, 4, -1, 8, -1, 0],
-            [0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
-            [0, -1, -1, -1, -1, 0, 0, 0, 0, 0],
-            [0, 0, 5, 0, 0, 0, -1, -1, -1, 0]]
-problem = Problem(matrix, [(1, 1)], [(7, 8)])
-
-path = GBFS(problem)
-print(path)
