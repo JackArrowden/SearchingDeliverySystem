@@ -335,7 +335,7 @@ class SystemGUI():
         
         # Draw fuel cells
         for index, fPoint in enumerate(self.listFs):
-            name = "F" + str(index + 1)
+            name = "F" + str(-self.map[fPoint[0]][fPoint[1]] - 1)
             drawSquare(canvas, fPoint[1], fPoint[0], edge, fill="yellow", outline="black")
             canvas.create_text(fPoint[1] * edge + edge / 2, fPoint[0] * edge + edge / 2, text = name, fill="black")
             

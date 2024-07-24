@@ -61,7 +61,7 @@ def readInput(file):
                         points.append([int(letter2)])
                     points[index.index(int(letter2))].append([i, j])
                 elif letter[0] == 'F':
-                    curRow.append(-2)
+                    curRow.append(-1 - int(letter2))
                     fuel.append([i, j])   
                     
             cityMap.append(curRow)
