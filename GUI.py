@@ -1,7 +1,7 @@
 # Supporting library
 import problem
-import FileHandler
 import tkinter as tk
+import time
 import FileHandler
 
 # Searching algorithm
@@ -47,6 +47,7 @@ class SystemGUI():
         self.fileName = ""
         self.map = [[0]]
         self.listSs = []
+        self.listCurSs = [None]
         self.listGs = []
         self.listFs = []
         self.isSolvable = True
@@ -56,6 +57,7 @@ class SystemGUI():
         self.isTail = False
         self.isResetList = True
         
+        self.curNumState = 0
         self.listPath = []
         self.listLine = []
         self.listRemainLine = []
@@ -65,6 +67,8 @@ class SystemGUI():
         self.frame3 = tk.Frame(self.root)
         self.frame4 = tk.Frame(self.root)
         self.frame5 = tk.Frame(self.root)
+        
+        self.autoRunTime = [1, {1: 1000, 2: 600, 3: 400, 4: 200, 5: 100}]
         
         self.showFrame1()
         
@@ -112,7 +116,7 @@ class SystemGUI():
             self.stepByStepManuBtn.pack(pady = (10, 10))
             
             ## Step by step automatically
-            self.stepByStepAutoBtn = tk.Button(self.subFrame2a, text = "Show step by step automatically", command = self.showFrame4, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
+            self.stepByStepAutoBtn = tk.Button(self.subFrame2a, text = "Show step by step automatically", command = lambda: self.showFrame4(True), bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
             self.stepByStepAutoBtn.pack(pady = (10, 10))
             
         ### Frame b
@@ -214,11 +218,13 @@ class SystemGUI():
         self.exitBtn3 = tk.Button(self.subFrame3b, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 40, height = 2, cursor = "hand2")
         self.exitBtn3.pack(pady = (5, 0))
         
-    def stepByStepFrame(self): #### Frame 4        
+    def stepByStepFrame(self, isAuto): #### Frame 4        
         if self.isResetList:
             self.isResetList = False
             self.moveContent(self.listLine, self.listRemainLine)
             self.listLine.append(self.listRemainLine.pop(0))
+        
+        self.listCurSs[0] = self.listLine[len(self.listLine) - 1][0] if len(self.listRemainLine) != 0 else None
             
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
@@ -232,18 +238,24 @@ class SystemGUI():
         self.subFrame4a.pack(expand=True, anchor='center', pady = (5, 15))  
         
         ## Sub frame 4 a1
-        self.subFrame4a1 = tk.Frame(self.subFrame4a, width = 410)
+        self.subFrame4a1 = tk.Frame(self.subFrame4a, width = 200)
         self.subFrame4a1.pack(side = tk.LEFT, expand=False, anchor='center', pady = (5, 5))  
         
         self.backBtn3a1 = tk.Button(self.subFrame4a1, text = "Back", command = self.showFrame2, bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
-        self.backBtn3a1.pack(side = tk.LEFT, pady = (5, 0), padx = (0, 200))
+        self.backBtn3a1.pack(side = tk.LEFT, pady = (5, 0), padx = (0, 50))
+        
+        ## Cur state
+        curStep = "Current step: " + str(self.curNumState)
+        self.curState = tk.Canvas(self.subFrame4a, bg = "#F0F0F0", width = 200, height = 30)
+        self.curState.pack(side = tk.LEFT, expand=True, anchor='center', pady = (20, 0), padx = (50, 50))     
+        self.curState.create_text(100, 10, text = curStep, fill = "black", font = self.font2)
         
         ## Sub frame 4 a2
-        self.subFrame4a2 = tk.Frame(self.subFrame4a, width = 410)
-        self.subFrame4a2.pack(side = tk.RIGHT, expand=False, anchor='center', pady = (5, 5)) 
+        self.subFrame4a2 = tk.Frame(self.subFrame4a, width = 200)
+        self.subFrame4a2.pack(side = tk.LEFT, expand=False, anchor='center', pady = (5, 5)) 
         
         self.exitBtn4 = tk.Button(self.subFrame4a2, text = "Exit", command = self.exit, bg = "#323232", fg = "#FAFAFA", width = 20, height = 2, cursor = "hand2")
-        self.exitBtn4.pack(side = tk.RIGHT, pady = (5, 0), padx = (200, 0))
+        self.exitBtn4.pack(side = tk.LEFT, pady = (5, 0), padx = (50, 0))
         
         ### Sub frame 4 b
         self.subFrame4b = tk.Canvas(self.frame4, bg = "white", width = wth, height = hht)
@@ -255,20 +267,39 @@ class SystemGUI():
         self.subFrame4c = tk.Frame(self.frame4)
         self.subFrame4c.pack(expand=True, anchor='center', pady = (15, 10))  
         
-        if self.isHead:
-            self.backBtn3 = tk.Button(self.subFrame4c, state = "disabled", text = "Previous", bg = "lightgray", fg = "white", width = 25, height = 2)
-            self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
+        if not isAuto:
+            if self.isHead:
+                self.prevBtn = tk.Button(self.subFrame4c, state = "disabled", text = "Previous", bg = "lightgray", fg = "white", width = 25, height = 2)
+                self.prevBtn.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
+            else:
+                self.prevBtn = tk.Button(self.subFrame4c, text = "Previous", command = self.prevMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+                self.prevBtn.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
+                
+            if self.isTail:
+                self.nextBtn = tk.Button(self.subFrame4c, state = "disabled", text = "Next", bg = "lightgray", fg = "white", width = 25, height = 2)
+                self.nextBtn.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
+            else:
+                self.nextBtn = tk.Button(self.subFrame4c, text = "Next", command = self.nextMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+                self.nextBtn.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
         else:
-            self.backBtn3 = tk.Button(self.subFrame4c, text = "Previous", command = self.prevMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
-            self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
-        
-        if self.isTail:
-            self.backBtn3 = tk.Button(self.subFrame4c, state = "disabled", text = "Next", bg = "lightgray", fg = "white", width = 25, height = 2)
-            self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
-        else:
-            self.backBtn3 = tk.Button(self.subFrame4c, text = "Next", command = self.nextMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
-            self.backBtn3.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
-    
+            if self.autoRunTime[0] != 1:
+                self.slowDown = tk.Button(self.subFrame4c, text = "Slow down", command = self.slowDownFunc, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+                self.slowDown.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))  
+            else:
+                self.slowDown = tk.Button(self.subFrame4c, state = "disabled", text = "Slow down", bg = "lightgray", fg = "white", width = 25, height = 2)
+                self.slowDown.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))  
+            
+            if self.autoRunTime[0] != len(self.autoRunTime[1]):
+                self.speedUp = tk.Button(self.subFrame4c, text = "Speed up", command = self.speedUpFunc, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+                self.speedUp.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))  
+            else:
+                self.speedUp = tk.Button(self.subFrame4c, state = "disabled", text = "Speed up", bg = "lightgray", fg = "white", width = 25, height = 2)
+                self.speedUp.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))  
+            
+        if isAuto:
+            if not self.isTail:
+                self.speedUp.after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(True))
+            
     def mapDrawing(self, canvas, wth, hht, edge):
         self.clearFrame(canvas)
         
@@ -285,30 +316,38 @@ class SystemGUI():
         for i in range(n):
             for j in range(m):
                 if self.map[i][j] == -1:
-                    drawSquare(canvas, j, i, edge, fill="lightgray")
+                    drawSquare(canvas, j, i, edge, fill="#AEAEAE")
                 elif self.map[i][j] > 0:
                     drawSquare(canvas, j, i, edge, fill="lightblue", outline="blue")
                     canvas.create_text(j * edge + edge / 2, i * edge + edge / 2, text = str(self.map[i][j]), fill="black")
         
         # Draw start vertice
-        for index, sPoint  in enumerate(self.listSs):
+        for index, sPoint in enumerate(self.listSs):
             name = "S" if index == 0 else "S" + str(index)
-            drawSquare(canvas, sPoint[1], sPoint[0], edge, fill="lightgreen", outline="green")
+            drawSquare(canvas, sPoint[1], sPoint[0], edge, fill="#00B050", outline="green")
             canvas.create_text(sPoint[1] * edge + edge / 2, sPoint[0] * edge + edge / 2, text = name, fill="black")
-        
+            
         # Draw goal vertice
-        for index, gPoint  in enumerate(self.listGs):
+        for index, gPoint in enumerate(self.listGs):
             name = "G" if index == 0 else "G" + str(index)
-            drawSquare(canvas, gPoint[1], gPoint[0], edge, fill="red", outline="darkred")
+            drawSquare(canvas, gPoint[1], gPoint[0], edge, fill="#E73B29", outline="darkred")
             canvas.create_text(gPoint[1] * edge + edge / 2, gPoint[0] * edge + edge / 2, text = name, fill="black")
         
         # Draw fuel cells
-        for index, fPoint  in enumerate(self.listFs):
+        for index, fPoint in enumerate(self.listFs):
             name = "F" + str(index + 1)
             drawSquare(canvas, fPoint[1], fPoint[0], edge, fill="yellow", outline="black")
             canvas.create_text(fPoint[1] * edge + edge / 2, fPoint[0] * edge + edge / 2, text = name, fill="black")
- 
+            
         drawSearchLines(canvas, self.listLine, edge, len(self.listRemainLine))
+ 
+        # Draw current position of the vehicle
+        for index, sPoint in enumerate(self.listCurSs):
+            if sPoint is None:
+                continue
+            name = "S" if index == 0 else "S" + str(index)
+            drawSquare(canvas, sPoint[1], sPoint[0], edge, fill="#73F589", outline="green")
+            canvas.create_text(sPoint[1] * edge + edge / 2, sPoint[0] * edge + edge / 2, text = name, fill="black")
         
         # Draw 4 directions' border
         canvas.create_line([(2, 0), (2, hht)], fill='black', tags='grid_line_w')
@@ -333,6 +372,9 @@ class SystemGUI():
         self.frame2.pack(expand=True, anchor='center')  
         self.clearFrame(self.frame2)  
         self.moveContent(self.listLine, self.listRemainLine)
+        
+        self.curNumState = 0
+        self.listCurSs = [None]
         self.chooseViewFrame()
         
     def backFromFrame2(self):
@@ -349,12 +391,12 @@ class SystemGUI():
         self.clearFrame(self.frame3)  
         self.finalResultFrame() 
         
-    def showFrame4(self):
+    def showFrame4(self, isAuto = False):
         self.unshowAllFrames()
         self.root.title("Step by step")
         self.frame4.pack(expand=True, anchor='center')
         self.clearFrame(self.frame4)  
-        self.stepByStepFrame()
+        self.stepByStepFrame(isAuto)
        
     def showFrame5(self):
         self.unshowAllFrames()
@@ -374,6 +416,7 @@ class SystemGUI():
         self.fileName = ""
         self.map = [[0]]
         self.listSs = []
+        self.listCurSs = [None]
         self.listGs = []
         self.listFs = []
         self.isSolvable = True
@@ -383,9 +426,12 @@ class SystemGUI():
         self.isTail = False
         self.isResetList = True
         
+        self.curNumState = 0
         self.listPath = []
         self.listLine = []
         self.listRemainLine = []
+        
+        self.autoRunTime[0] = 1
         
         self.showFrame1()   
         
@@ -441,7 +487,7 @@ class SystemGUI():
                     self.getListEdgePath()
                 self.showFrame2()
             else:
-                self.problem = problem.Problem(self.map, self.listSs, self.listGs)
+                self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
                 # Choose another algorithm to run
                 # self.listPath = UCS_level_2_3(self.problem)
                 self.showFrame2()
@@ -461,6 +507,7 @@ class SystemGUI():
             listB.insert(0, cur)
     
     def prevMap(self):
+        self.curNumState = self.curNumState - 1
         cur = (0, 0)
             
         if len(self.listLine) >= 2:
@@ -474,7 +521,8 @@ class SystemGUI():
             
         self.showFrame4()
     
-    def nextMap(self):
+    def nextMap(self, isAuto = False):
+        self.curNumState = self.curNumState + 1
         cur = (0, 0)
         
         if len(self.listRemainLine) >= 1:
@@ -486,7 +534,17 @@ class SystemGUI():
         if not len(self.listLine) == 0:
             self.isHead = False
         
-        self.showFrame4()
+        self.showFrame4(isAuto)
+       
+    def slowDownFunc(self):
+        if self.autoRunTime[0] > 1:
+            self.autoRunTime[0] = self.autoRunTime[0] - 1
+        return
+    
+    def speedUpFunc(self):
+        if self.autoRunTime[0] < len(self.autoRunTime[1]):
+            self.autoRunTime[0] = self.autoRunTime[0] + 1
+        return
         
     def entryOnFocus(self, event):
         if self.entry.get("1.0", tk.END).strip() == self.default_text:
