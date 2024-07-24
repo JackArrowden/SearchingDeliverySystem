@@ -25,7 +25,7 @@
 - [ ] GUI level 4: A
 - [ ] Another algorithm to run level 4: A, B, C, D
 - [ ] Generate test cases for level 4: D
-- [ ] Write report about DFS and UCS: B
+- [x] Write report about DFS and UCS: B
 - [ ] Write report about Best-first-search and A*: D
 - [ ] Write report about file handling functions: A
 - [ ] Write report for new algorithm: C
