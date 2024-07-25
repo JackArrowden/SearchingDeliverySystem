@@ -5,7 +5,7 @@ import time
 import FileHandler
 
 # Searching algorithm
-from UCS_level_2_3 import UCS_level_2_3
+from BFS_level_2_3 import BFS_level_2_3
 from source_level_1.A_star import a_star_search
 from source_level_1.BFS import BFS
 from source_level_1.DFS import DFS
@@ -472,7 +472,7 @@ class SystemGUI():
                 self.showFrame5()
             elif len(resultRead) == 4:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3])
-                self.listPath = UCS_level_2_3(self.problem)
+                self.listPath = BFS_level_2_3(self.problem)
                 if self.listPath is None:
                     self.isSolvable = False
                 else:
@@ -480,7 +480,7 @@ class SystemGUI():
                 self.showFrame2()
             elif len(resultRead) == 6 and len(self.listSs) == 1:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
-                self.listPath = UCS_level_2_3(self.problem)
+                self.listPath = BFS_level_2_3(self.problem)
                 if self.listPath is None:
                     self.isSolvable = False
                 else:

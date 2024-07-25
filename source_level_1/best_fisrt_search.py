@@ -15,12 +15,9 @@ def best_first_search(problem : Problem, f):
         if problem.is_goal(node.state):
             return node
 
-        for action in problem.ACTIONS(node.state):
-            child_state = problem.RESULT(node.state, action)
-            child_node = Node(child_state, node, node.path_cost + problem.ACTION_COST(node.state, action, child_state))
-
-            child_key = (child_node.path_cost + f(child_node), child_node)
-            if child_state not in reached or child_key < (f(reached[child_state]), reached[child_state]):
-                reached[child_state] = child_node
-                heapq.heappush(frontier, child_key)
+        for child in problem.EXPAND(node):
+            s = child.state
+            if s not in reached or f(child) < f(reached[s]):
+                reached[s] = child
+                heapq.heappush(frontier, (f(child), child))
     return None
