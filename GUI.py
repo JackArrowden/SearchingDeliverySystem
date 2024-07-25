@@ -43,6 +43,9 @@ class SystemGUI():
         self.text1 = "The file's name must not be left blank!"
         self.text2 = "An error occur while opening input file\nPlease enter another file's name..."
         self.root.protocol("WM_DELETE_WINDOW", self.exit)    
+        self.width = 0
+        self.height = 0
+        self.edge = 0
             
         self.fileName = ""
         self.map = [[0]]
@@ -69,6 +72,7 @@ class SystemGUI():
         self.frame5 = tk.Frame(self.root)
         
         self.autoRunTime = [1, {1: 1000, 2: 600, 3: 400, 4: 200, 5: 100}]
+        self.resetBtn = [True, True, True]
         
         self.showFrame1()
         
@@ -186,7 +190,7 @@ class SystemGUI():
             5 : a_star_search
         }
         self.listPath = listAlgo[numAlgo](self.problem)
-        if self.listPath is None:
+        if isinstance(self.listPath, int):
             self.isSolvable = False
         else:
             self.getListEdgePath()
@@ -223,15 +227,17 @@ class SystemGUI():
             self.isResetList = False
             self.moveContent(self.listLine, self.listRemainLine)
             self.listLine.append(self.listRemainLine.pop(0))
-        
+                    
         self.listCurSs[0] = self.listLine[len(self.listLine) - 1][0] if len(self.listRemainLine) != 0 else None
             
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
         
         cellEdge = int(((wth / len(self.map[0])) + (hht / len(self.map))) / 2)
-        wth = cellEdge * len(self.map[0])
-        hht = cellEdge * len(self.map)
+        self.width = cellEdge * len(self.map[0])
+        self.height = cellEdge * len(self.map)
+        self.edge = cellEdge
+        self.curTxtID = 0
         
         ### Sub frame 4 a
         self.subFrame4a = tk.Frame(self.frame4)
@@ -258,47 +264,40 @@ class SystemGUI():
         self.exitBtn4.pack(side = tk.LEFT, pady = (5, 0), padx = (50, 0))
         
         ### Sub frame 4 b
-        self.subFrame4b = tk.Canvas(self.frame4, bg = "white", width = wth, height = hht)
+        self.subFrame4b = tk.Canvas(self.frame4, bg = "white", width = self.width, height = self.height)
         self.subFrame4b.pack(expand=True, anchor='center', pady = (10, 10))  
         
-        self.mapDrawing(self.subFrame4b, wth, hht, cellEdge)
+        self.mapDrawing(self.subFrame4b, self.width, self.height, cellEdge)
         
         ### Sub frame 4 c
         self.subFrame4c = tk.Frame(self.frame4)
         self.subFrame4c.pack(expand=True, anchor='center', pady = (15, 10))  
         
         if not isAuto:
-            if self.isHead:
-                self.prevBtn = tk.Button(self.subFrame4c, state = "disabled", text = "Previous", bg = "lightgray", fg = "white", width = 25, height = 2)
-                self.prevBtn.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
-            else:
-                self.prevBtn = tk.Button(self.subFrame4c, text = "Previous", command = self.prevMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
-                self.prevBtn.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
+            self.prevBtn1 = tk.Button(self.subFrame4c, state = "disabled", text = "Previous", bg = "lightgray", fg = "white", width = 25, height = 2)
+            self.prevBtn2 = tk.Button(self.subFrame4c, text = "Previous", command = lambda: self.prevMap(kwargs = [self.subFrame4b, self.prevBtn1, self.prevBtn2, self.nextBtn1, self.nextBtn2, self.curState]), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.prevBtn1.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
                 
-            if self.isTail:
-                self.nextBtn = tk.Button(self.subFrame4c, state = "disabled", text = "Next", bg = "lightgray", fg = "white", width = 25, height = 2)
-                self.nextBtn.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
-            else:
-                self.nextBtn = tk.Button(self.subFrame4c, text = "Next", command = self.nextMap, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
-                self.nextBtn.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))
+            self.nextBtn1 = tk.Button(self.subFrame4c, state = "disabled", text = "Next", bg = "lightgray", fg = "white", width = 25, height = 2)
+            self.nextBtn2 = tk.Button(self.subFrame4c, text = "Next", command = lambda: self.nextMap(isAuto = False, kwargs = [self.subFrame4b, self.prevBtn1, self.prevBtn2, self.nextBtn1, self.nextBtn2, self.curState]), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.nextBtn2.pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))
         else:
-            if self.autoRunTime[0] != 1:
-                self.slowDown = tk.Button(self.subFrame4c, text = "Slow down", command = self.slowDownFunc, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
-                self.slowDown.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))  
+            self.slowDown1 = tk.Button(self.subFrame4c, text = "Slow down", command = lambda: self.slowDownFunc(kwargs = [self.slowDown1, self.slowDown2, self.speedUp1, self.speedUp2]), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.slowDown2 = tk.Button(self.subFrame4c, state = "disabled", text = "Slow down", bg = "lightgray", fg = "white", width = 25, height = 2)
+            if self.autoRunTime[0] == 1:
+                self.slowDown2.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))  
             else:
-                self.slowDown = tk.Button(self.subFrame4c, state = "disabled", text = "Slow down", bg = "lightgray", fg = "white", width = 25, height = 2)
-                self.slowDown.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))  
+                self.slowDown1.pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))  
             
+            self.speedUp1 = tk.Button(self.subFrame4c, text = "Speed up", command = lambda: self.speedUpFunc(kwargs = [self.slowDown1, self.slowDown2, self.speedUp1, self.speedUp2]), bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
+            self.speedUp2 = tk.Button(self.subFrame4c, state = "disabled", text = "Speed up", bg = "lightgray", fg = "white", width = 25, height = 2)
             if self.autoRunTime[0] != len(self.autoRunTime[1]):
-                self.speedUp = tk.Button(self.subFrame4c, text = "Speed up", command = self.speedUpFunc, bg = "#323232", fg = "#FAFAFA", width = 25, height = 2, cursor = "hand2")
-                self.speedUp.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))  
+                self.speedUp1.pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))  
             else:
-                self.speedUp = tk.Button(self.subFrame4c, state = "disabled", text = "Speed up", bg = "lightgray", fg = "white", width = 25, height = 2)
-                self.speedUp.pack(side = tk.LEFT, pady = (0, 5), padx = (50, 0))  
+                self.speedUp2.pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))  
             
         if isAuto:
-            if not self.isTail:
-                self.speedUp.after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(True))
+            self.subFrame4c.after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = [self.subFrame4b, self.subFrame4c, self.curState]))
             
     def mapDrawing(self, canvas, wth, hht, edge):
         self.clearFrame(canvas)
@@ -335,7 +334,7 @@ class SystemGUI():
         
         # Draw fuel cells
         for index, fPoint in enumerate(self.listFs):
-            name = "F" + str(-self.map[fPoint[0]][fPoint[1]] - 1)
+            name = "F" + str(-self.map[fPoint[0]][fPoint[1]] - 1) if self.map[fPoint[0]][fPoint[1]] < 0 else "F"
             drawSquare(canvas, fPoint[1], fPoint[0], edge, fill="yellow", outline="black")
             canvas.create_text(fPoint[1] * edge + edge / 2, fPoint[0] * edge + edge / 2, text = name, fill="black")
             
@@ -354,6 +353,10 @@ class SystemGUI():
         canvas.create_line([(wth, 0), (wth, hht)], fill='black', tags='grid_line_w')
         canvas.create_line([(0, 2), (wth, 2)], fill='black', tags='grid_line_w')
         canvas.create_line([(0, hht), (wth, hht)], fill='black', tags='grid_line_w')
+    
+    def clearCanvas(self, canvas):
+        for item in canvas.find_all():
+            canvas.delete(item)
     
     def showFrame1(self):
         self.isResetList = True
@@ -396,6 +399,7 @@ class SystemGUI():
         self.root.title("Step by step")
         self.frame4.pack(expand=True, anchor='center')
         self.clearFrame(self.frame4)  
+        self.curNumState = 0
         self.stepByStepFrame(isAuto)
        
     def showFrame5(self):
@@ -465,15 +469,15 @@ class SystemGUI():
             self.map = resultRead[0]
             self.listSs = resultRead[1]
             self.listGs = resultRead[2]
-            self.listFs = resultRead[5] if len(resultRead) == 6 else []
-            if len(resultRead) == 3:
+            self.listFs = resultRead[len(resultRead) - 1]
+            if len(resultRead) == 4:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs)
                 self.isLevel1 = True
                 self.showFrame5()
-            elif len(resultRead) == 4:
+            elif len(resultRead) == 5:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3])
                 self.listPath = BFS_level_2_3(self.problem)
-                if self.listPath is None:
+                if isinstance(self.listPath, int):
                     self.isSolvable = False
                 else:
                     self.getListEdgePath()
@@ -481,9 +485,23 @@ class SystemGUI():
             elif len(resultRead) == 6 and len(self.listSs) == 1:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
                 self.listPath = BFS_level_2_3(self.problem)
-                if self.listPath is None:
+                if isinstance(self.listPath, int):
                     self.isSolvable = False
                 else:
+                    pathLen = len(self.listPath)
+                    count = 0
+                    for index in range(pathLen):
+                        if count > 0:
+                            count = count - 1
+                            continue
+                        if self.map[self.listPath[index][0]][self.listPath[index][1]] > 0:
+                            count = self.map[self.listPath[index][0]][self.listPath[index][1]]
+                            for i in range(count):
+                                self.listPath.insert(index + 1, self.listPath[index])
+                        if self.map[self.listPath[index][0]][self.listPath[index][1]] < -1:
+                            count = -self.map[self.listPath[index][0]][self.listPath[index][1]] - 1
+                            for i in range(count):
+                                self.listPath.insert(index + 1, self.listPath[index])
                     self.getListEdgePath()
                 self.showFrame2()
             else:
@@ -506,45 +524,81 @@ class SystemGUI():
             cur = listA.pop()
             listB.insert(0, cur)
     
-    def prevMap(self):
+    def prevMap(self, kwargs = []):
         self.curNumState = self.curNumState - 1
+        curStep = "Current step: " + str(self.curNumState)
+        self.clearCanvas(kwargs[5])
+        kwargs[5].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
+            
         cur = (0, 0)
             
         if len(self.listLine) >= 2:
             cur = self.listLine.pop()
             self.listRemainLine.insert(0, cur)
             
-        if len(self.listLine) <= 1:
-            self.isHead = True
-        if not len(self.listRemainLine) == 0:
-            self.isTail = False
-            
-        self.showFrame4()
-    
-    def nextMap(self, isAuto = False):
-        self.curNumState = self.curNumState + 1
-        cur = (0, 0)
+        self.listCurSs[0] = self.listLine[len(self.listLine) - 1][0] if len(self.listRemainLine) != 0 else None
         
+        self.clearCanvas(kwargs[0])
+        self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
+        
+        if len(self.listLine) <= 1:
+            kwargs[1].pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
+            kwargs[2].pack_forget()
+        if not len(self.listRemainLine) == 0:
+            kwargs[3].pack_forget()
+            kwargs[4].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))
+            
+    def nextMap(self, isAuto = False, kwargs = []):
+        self.curNumState = self.curNumState + 1
+        curStep = "Current step: " + str(self.curNumState)
+        if isAuto:
+            self.clearCanvas(kwargs[2])
+            kwargs[2].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
+        else:
+            self.clearCanvas(kwargs[5])
+            kwargs[5].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
+        
+        cur = (0, 0)
         if len(self.listRemainLine) >= 1:
             cur = self.listRemainLine.pop(0)
             self.listLine.append(cur)
             
-        if len(self.listRemainLine) == 0:
-            self.isTail = True
-        if not len(self.listLine) == 0:
-            self.isHead = False
+        self.listCurSs[0] = self.listLine[len(self.listLine) - 1][0] if len(self.listRemainLine) != 0 else None
         
-        self.showFrame4(isAuto)
+        self.clearCanvas(kwargs[0])
+        self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
+            
+        if not isAuto:
+            if not len(self.listLine) == 0:
+                kwargs[1].pack_forget()
+                kwargs[2].pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
+            if len(self.listRemainLine) == 0:
+                kwargs[4].pack_forget()
+                kwargs[3].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))
+        else:
+            if len(self.listRemainLine) != 0:
+                temp = kwargs
+                kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
        
-    def slowDownFunc(self):
+    def slowDownFunc(self, kwargs = []):
         if self.autoRunTime[0] > 1:
             self.autoRunTime[0] = self.autoRunTime[0] - 1
-        return
+        if self.autoRunTime[0] == 1:
+            kwargs[0].pack_forget()
+            kwargs[1].pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))  
+        if self.autoRunTime[0] != len(self.autoRunTime[1]):
+            kwargs[3].pack_forget()
+            kwargs[2].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))  
     
-    def speedUpFunc(self):
+    def speedUpFunc(self, kwargs = []):
         if self.autoRunTime[0] < len(self.autoRunTime[1]):
             self.autoRunTime[0] = self.autoRunTime[0] + 1
-        return
+        if self.autoRunTime[0] != 1:
+            kwargs[1].pack_forget()
+            kwargs[0].pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))  
+        if self.autoRunTime[0] == len(self.autoRunTime[1]):
+            kwargs[2].pack_forget()
+            kwargs[3].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))  
         
     def entryOnFocus(self, event):
         if self.entry.get("1.0", tk.END).strip() == self.default_text:
@@ -568,6 +622,7 @@ class SystemGUI():
         self.root.destroy()
 
 # ./test_level_3/input5_level3.txt
+# ./test_level_2/input5_level2.txt
 # ./test_level_1/input5_level1.txt
 if __name__ == "__main__":
     root = tk.Tk()

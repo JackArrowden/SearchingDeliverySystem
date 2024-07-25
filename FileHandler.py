@@ -24,8 +24,8 @@ def readInput(file):
             
         n = int(strArray[0])
         m = int(strArray[1])
-        t = int(strArray[2]) if len(strArray) >= 3 else None
-        f = int(strArray[3]) if len(strArray) == 4 else None
+        t = int(strArray[2]) if int(file[-5]) >= 2 else None
+        f = int(strArray[3]) if int(file[-5]) >= 3 else None
             
         cityMap = []
         points = []
@@ -61,7 +61,10 @@ def readInput(file):
                         points.append([int(letter2)])
                     points[index.index(int(letter2))].append([i, j])
                 elif letter[0] == 'F':
-                    curRow.append(-1 - int(letter2))
+                    if f is None:
+                        curRow.append(0)
+                    else:
+                        curRow.append(-1 - int(letter2))
                     fuel.append([i, j])   
                     
             cityMap.append(curRow)
@@ -75,7 +78,7 @@ def readInput(file):
             goalPoints.clear()
             goalPoints = [point[2] if len(point) == 3 else listPoints.pop() for point in points]
         
-        return (cityMap, startPoints, goalPoints) if t == None else (cityMap, startPoints, goalPoints, t) if f == None else (cityMap, startPoints, goalPoints, t, f, fuel)
+        return (cityMap, startPoints, goalPoints, fuel) if t == None else (cityMap, startPoints, goalPoints, t, fuel) if f == None else (cityMap, startPoints, goalPoints, t, f, fuel)
             
     finally:
         curFile.close()
