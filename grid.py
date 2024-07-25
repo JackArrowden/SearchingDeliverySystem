@@ -16,11 +16,19 @@ class Grid:
     def is_gas_station(self, x: int, y: int):
         if not self.is_cell(x, y):
             return False
-
         return self.matrix[x][y] < -1 
     
-    def refill_time(self, x:int, y:int):
-        return None if self.matrix[x][y] >= -1 else -self.matrix[x][y] - 1 
+    def is_blank_cell(self, x: int, y: int):
+        return self.is_cell(x, y) and self.matrix[x][y] == 0
     
-    def time_2_out(self, x: int, y: int):
-        return self.matrix[x][y] + 1 if self.matrix[x][y] > -1 else 1
+    def time_2_in(self, x: int, y: int):
+        if self.matrix[x][y] == -1: 
+            return None
+        return self.matrix[x][y] + 1 if self.matrix[x][y] > -1 else -self.matrix[x][y] 
+    
+
+if __name__ == '__main__':
+    b = False
+    a = 1
+    test = -a + 1 if b else -2
+    print(test)

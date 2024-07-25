@@ -1,5 +1,5 @@
 from problem import Problem
-from UCS_level_2_3 import UCS_level_2_3
+from BFS_level_2_3 import UCS_level_2_3
 from source_level_1.A_star import a_star_search
 from FileHandler import readInput
 
