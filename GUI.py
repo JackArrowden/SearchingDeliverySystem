@@ -1,7 +1,6 @@
 # Supporting library
 import problem
 import tkinter as tk
-import time
 import FileHandler
 
 # Searching algorithm
@@ -61,9 +60,9 @@ class SystemGUI():
         self.isResetList = True
         
         self.curNumState = 0
-        self.listPath = []
-        self.listLine = []
-        self.listRemainLine = []
+        self.listPath = [[]]
+        self.listLine = [[]]
+        self.listRemainLine = [[]]
         
         self.frame1 = tk.Frame(self.root)
         self.frame2 = tk.Frame(self.root)
@@ -73,6 +72,12 @@ class SystemGUI():
         
         self.autoRunTime = [1, {1: 1000, 2: 600, 3: 400, 4: 200, 5: 100}]
         self.resetBtn = [True, True, True]
+        
+        self.listColorSs = [["#00B050", "green"]]
+        self.listColorCurSs = [["#73F589", "green"]]
+        self.listColorGs = [["#E73B29", "darkred"]]
+        self.listColorFs = [["yellow", "black"], ["yellow", "black"]]
+        self.listColorLines = ["green", "red"]
         
         self.showFrame1()
         
@@ -189,15 +194,15 @@ class SystemGUI():
             4 : GBFS,
             5 : a_star_search
         }
-        self.listPath = listAlgo[numAlgo](self.problem)
-        if isinstance(self.listPath, int):
+        self.listPath[0] = listAlgo[numAlgo](self.problem)
+        if isinstance(self.listPath[0], int):
             self.isSolvable = False
         else:
             self.getListEdgePath()
         self.showFrame2()
     
     def finalResultFrame(self): #### Frame 3
-        self.moveContent(self.listRemainLine, self.listLine)
+        self.move2DContent(self.listRemainLine, self.listLine)
         
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
@@ -225,10 +230,10 @@ class SystemGUI():
     def stepByStepFrame(self, isAuto): #### Frame 4        
         if self.isResetList:
             self.isResetList = False
-            self.moveContent(self.listLine, self.listRemainLine)
-            self.listLine.append(self.listRemainLine.pop(0))
-                    
-        self.listCurSs[0] = self.listLine[len(self.listLine) - 1][0] if len(self.listRemainLine) != 0 else None
+            self.move2DContent(self.listLine, self.listRemainLine)
+            self.move1Item(self.listRemainLine, self.listLine)
+                 
+        self.copy1Item(self.listCurSs, self.listLine, constraint = self.listRemainLine)
             
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
@@ -323,29 +328,30 @@ class SystemGUI():
         # Draw start vertice
         for index, sPoint in enumerate(self.listSs):
             name = "S" if index == 0 else "S" + str(index)
-            drawSquare(canvas, sPoint[1], sPoint[0], edge, fill="#00B050", outline="green")
+            drawSquare(canvas, sPoint[1], sPoint[0], edge, fill=self.listColorSs[index][0], outline=self.listColorSs[index][1])
             canvas.create_text(sPoint[1] * edge + edge / 2, sPoint[0] * edge + edge / 2, text = name, fill="black")
             
         # Draw goal vertice
         for index, gPoint in enumerate(self.listGs):
             name = "G" if index == 0 else "G" + str(index)
-            drawSquare(canvas, gPoint[1], gPoint[0], edge, fill="#E73B29", outline="darkred")
+            drawSquare(canvas, gPoint[1], gPoint[0], edge, fill=self.listColorGs[index][0], outline=self.listColorGs[index][1])
             canvas.create_text(gPoint[1] * edge + edge / 2, gPoint[0] * edge + edge / 2, text = name, fill="black")
         
         # Draw fuel cells
         for index, fPoint in enumerate(self.listFs):
             name = "F" + str(-self.map[fPoint[0]][fPoint[1]] - 1) if self.map[fPoint[0]][fPoint[1]] < 0 else "F"
-            drawSquare(canvas, fPoint[1], fPoint[0], edge, fill="yellow", outline="black")
+            drawSquare(canvas, fPoint[1], fPoint[0], edge, fill=self.listColorFs[index][0], outline=self.listColorFs[index][1])
             canvas.create_text(fPoint[1] * edge + edge / 2, fPoint[0] * edge + edge / 2, text = name, fill="black")
             
-        drawSearchLines(canvas, self.listLine, edge, len(self.listRemainLine))
+        for index, lines in enumerate(self.listLine):
+            drawSearchLines(canvas, lines, edge, len(self.listRemainLine[index]))
  
         # Draw current position of the vehicle
         for index, sPoint in enumerate(self.listCurSs):
             if sPoint is None:
                 continue
             name = "S" if index == 0 else "S" + str(index)
-            drawSquare(canvas, sPoint[1], sPoint[0], edge, fill="#73F589", outline="green")
+            drawSquare(canvas, sPoint[1], sPoint[0], edge, fill=self.listColorCurSs[index][0], outline=self.listColorCurSs[index][1])
             canvas.create_text(sPoint[1] * edge + edge / 2, sPoint[0] * edge + edge / 2, text = name, fill="black")
         
         # Draw 4 directions' border
@@ -373,8 +379,8 @@ class SystemGUI():
         self.unshowAllFrames()
         self.root.title("Choose view frame")
         self.frame2.pack(expand=True, anchor='center')  
-        self.clearFrame(self.frame2)  
-        self.moveContent(self.listLine, self.listRemainLine)
+        self.clearFrame(self.frame2) 
+        self.move2DContent(self.listLine, self.listRemainLine)
         
         self.curNumState = 0
         self.listCurSs = [None]
@@ -431,9 +437,9 @@ class SystemGUI():
         self.isResetList = True
         
         self.curNumState = 0
-        self.listPath = []
-        self.listLine = []
-        self.listRemainLine = []
+        self.listPath = [[]]
+        self.listLine = [[]]
+        self.listRemainLine = [[]]
         
         self.autoRunTime[0] = 1
         
@@ -445,9 +451,9 @@ class SystemGUI():
         self.isTail = False
         self.isResetList = True
         
-        self.listPath = []
-        self.listLine = []
-        self.listRemainLine = []
+        self.listPath = [[]]
+        self.listLine = [[]]
+        self.listRemainLine = [[]]
         
     def clearFrame(self, frame):
         for widget in frame.winfo_children():
@@ -476,32 +482,42 @@ class SystemGUI():
                 self.showFrame5()
             elif len(resultRead) == 5:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3])
-                self.listPath = BFS_level_2_3(self.problem)
-                if isinstance(self.listPath, int):
+                self.listPath[0] = BFS_level_2_3(self.problem)
+                if isinstance(self.listPath[0], int):
                     self.isSolvable = False
                 else:
-                    self.getListEdgePath()
-                self.showFrame2()
-            elif len(resultRead) == 6 and len(self.listSs) == 1:
-                self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
-                self.listPath = BFS_level_2_3(self.problem)
-                if isinstance(self.listPath, int):
-                    self.isSolvable = False
-                else:
-                    pathLen = len(self.listPath)
+                    pathLen = len(self.listPath[0])
                     count = 0
                     for index in range(pathLen):
                         if count > 0:
                             count = count - 1
                             continue
-                        if self.map[self.listPath[index][0]][self.listPath[index][1]] > 0:
-                            count = self.map[self.listPath[index][0]][self.listPath[index][1]]
+                        if self.map[self.listPath[0][index][0]][self.listPath[0][index][1]] > 0:
+                            count = self.map[self.listPath[0][index][0]][self.listPath[0][index][1]]
                             for i in range(count):
-                                self.listPath.insert(index + 1, self.listPath[index])
-                        if self.map[self.listPath[index][0]][self.listPath[index][1]] < -1:
-                            count = -self.map[self.listPath[index][0]][self.listPath[index][1]] - 1
+                                self.listPath[0].insert(index + 1, self.listPath[0][index])
+                    self.getListEdgePath()
+                self.showFrame2()
+            elif len(resultRead) == 6 and len(self.listSs) == 1:
+                self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
+                self.listPath[0] = BFS_level_2_3(self.problem)
+                if isinstance(self.listPath[0], int):
+                    self.isSolvable = False
+                else:
+                    pathLen = len(self.listPath[0])
+                    count = 0
+                    for index in range(pathLen):
+                        if count > 0:
+                            count = count - 1
+                            continue
+                        if self.map[self.listPath[0][index][0]][self.listPath[0][index][1]] > 0:
+                            count = self.map[self.listPath[0][index][0]][self.listPath[0][index][1]]
                             for i in range(count):
-                                self.listPath.insert(index + 1, self.listPath[index])
+                                self.listPath[0].insert(index + 1, self.listPath[0][index])
+                        if self.map[self.listPath[0][index][0]][self.listPath[0][index][1]] < -1:
+                            count = -self.map[self.listPath[0][index][0]][self.listPath[0][index][1]] - 1
+                            for i in range(count):
+                                self.listPath[0].insert(index + 1, self.listPath[0][index])
                     self.getListEdgePath()
                 self.showFrame2()
             else:
@@ -511,18 +527,35 @@ class SystemGUI():
                 self.showFrame2()
 
     def getListEdgePath(self):
-        curLen = len(self.listPath)
-        if curLen == 0:
-            return False
-        
-        for point in self.listPath:
-            self.listLine.append([point, "green"])
+        numVertice = len(self.listPath)
+        for i in range(numVertice):
+            curLen = len(self.listPath[i])
+            if i == 0 and curLen == 0:
+                return False
+            
+            for point in self.listPath[i]:
+                self.listLine[i].append([point, self.listColorLines[i]])
         return True
     
     def moveContent(self, listA, listB):
         while listA:
             cur = listA.pop()
             listB.insert(0, cur)
+    
+    def move2DContent(self, listA, listB):
+        listLen = len(listA)
+        for index in range(listLen):
+            self.moveContent(listA[index], listB[index])
+    
+    def move1Item(self, listA, listB):
+        listLen = len(listA)
+        for i in range(listLen):
+            listB[i].append(listA[i].pop(0))
+            
+    def copy1Item(Self, list1D, list2D, constraint):
+        listLen = len(list1D)
+        for i in range(listLen):
+            list1D[i] = list2D[i][len(list2D[i]) - 1][0] if len(constraint[i]) != 0 else None
     
     def prevMap(self, kwargs = []):
         self.curNumState = self.curNumState - 1
@@ -532,19 +565,20 @@ class SystemGUI():
             
         cur = (0, 0)
             
-        if len(self.listLine) >= 2:
-            cur = self.listLine.pop()
-            self.listRemainLine.insert(0, cur)
+        for index, lines in enumerate(self.listLine):
+            if len(lines) >= 2:
+                cur = lines.pop()
+                self.listRemainLine[index].insert(0, cur)
             
-        self.listCurSs[0] = self.listLine[len(self.listLine) - 1][0] if len(self.listRemainLine) != 0 else None
+        self.copy1Item(self.listCurSs, self.listLine, constraint = self.listRemainLine)
         
         self.clearCanvas(kwargs[0])
         self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
         
-        if len(self.listLine) <= 1:
+        if len(self.listLine[0]) <= 1:
             kwargs[1].pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
             kwargs[2].pack_forget()
-        if not len(self.listRemainLine) == 0:
+        if not len(self.listRemainLine[0]) == 0:
             kwargs[3].pack_forget()
             kwargs[4].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))
             
@@ -559,24 +593,25 @@ class SystemGUI():
             kwargs[5].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
         
         cur = (0, 0)
-        if len(self.listRemainLine) >= 1:
-            cur = self.listRemainLine.pop(0)
-            self.listLine.append(cur)
+        for index, lines in enumerate(self.listRemainLine):
+            if len(lines) >= 1:
+                cur = lines.pop(0)
+                self.listLine[index].append(cur)
             
-        self.listCurSs[0] = self.listLine[len(self.listLine) - 1][0] if len(self.listRemainLine) != 0 else None
+        self.copy1Item(self.listCurSs, self.listLine, constraint = self.listRemainLine)
         
         self.clearCanvas(kwargs[0])
         self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
             
         if not isAuto:
-            if not len(self.listLine) == 0:
+            if not len(self.listLine[0]) == 0:
                 kwargs[1].pack_forget()
                 kwargs[2].pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
-            if len(self.listRemainLine) == 0:
+            if len(self.listRemainLine[0]) == 0:
                 kwargs[4].pack_forget()
                 kwargs[3].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))
         else:
-            if len(self.listRemainLine) != 0:
+            if len(self.listRemainLine[0]) != 0:
                 temp = kwargs
                 kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
        

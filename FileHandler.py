@@ -95,5 +95,3 @@ def writeOutput(file, listPath):
             
     curFile.close()
     return
-
-# print(readInput('input.txt'))
