@@ -256,7 +256,7 @@ class SystemGUI():
         self.backBtn3a1.pack(side = tk.LEFT, pady = (5, 0), padx = (0, 50))
         
         ## Cur state
-        curStep = "Current step: " + str(self.curNumState)
+        curStep = "Iteration: " + str(self.curNumState)
         self.curState = tk.Canvas(self.subFrame4a, bg = "#F0F0F0", width = 200, height = 30)
         self.curState.pack(side = tk.LEFT, expand=True, anchor='center', pady = (20, 0), padx = (50, 50))     
         self.curState.create_text(100, 10, text = curStep, fill = "black", font = self.font2)
@@ -562,7 +562,7 @@ class SystemGUI():
     
     def prevMap(self, kwargs = []):
         self.curNumState = self.curNumState - 1
-        curStep = "Current step: " + str(self.curNumState)
+        curStep = "Iteration: " + str(self.curNumState)
         self.clearCanvas(kwargs[5])
         kwargs[5].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
             
@@ -587,7 +587,7 @@ class SystemGUI():
             
     def nextMap(self, isAuto = False, kwargs = []):
         self.curNumState = self.curNumState + 1
-        curStep = "Current step: " + str(self.curNumState)
+        curStep = "Iteration: " + str(self.curNumState)
         if isAuto:
             self.clearCanvas(kwargs[2])
             kwargs[2].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
