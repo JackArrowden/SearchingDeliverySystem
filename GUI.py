@@ -506,9 +506,11 @@ class SystemGUI():
                 else:
                     pathLen = len(self.listPath[0])
                     count = 0
-                    for index in range(pathLen):
+                    index = 0
+                    while index < len(self.listPath[0]):
                         if count > 0:
                             count = count - 1
+                            index += 1
                             continue
                         if self.map[self.listPath[0][index][0]][self.listPath[0][index][1]] > 0:
                             count = self.map[self.listPath[0][index][0]][self.listPath[0][index][1]]
@@ -518,6 +520,7 @@ class SystemGUI():
                             count = -self.map[self.listPath[0][index][0]][self.listPath[0][index][1]] - 1
                             for i in range(count):
                                 self.listPath[0].insert(index + 1, self.listPath[0][index])
+                        index += 1
                     self.getListEdgePath()
                 self.showFrame2()
             else:
