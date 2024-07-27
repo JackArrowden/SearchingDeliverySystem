@@ -52,6 +52,9 @@ class SystemGUI():
         self.listSs = []
         self.listCurSs = [None for _ in range(len(self.listSs))]
         self.listGs = []
+        self.listAllGs = []
+        self.listCurGs = []
+        self.list1stAppearanceGs = []
         self.listFs = []
         self.isSolvable = True
         self.isLevel1 = False
@@ -74,11 +77,30 @@ class SystemGUI():
         self.autoRunTime = [1, {1: 1000, 2: 600, 3: 400, 4: 200, 5: 100}]
         self.resetBtn = [True, True, True]
         
-        self.listColorSs = [["#00B050", "green"], ["#00B050", "green"], ["#00B050", "green"]]
-        self.listColorCurSs = [["#73F589", "green"], ["#73F589", "green"], ["#73F589", "green"]]
-        self.listColorGs = [["#E73B29", "darkred"], ["#E73B29", "darkred"], ["#E73B29", "darkred"]]
-        self.listColorFs = [["#F3F595", "black"], ["#F6F791", "black"], ["#F7F98B", "black"], ["#F9FA81", "black"], ["#FBFB75", "black"], ["#FCFD64", "black"], ["#FDFD54", "black"], ["#FEFE3B", "black"], ["#FFFF27", "black"], ["#FFFF10", "black"]]
-        self.listColorLines = ["green", "red", "blue"]
+        self.listColorSs = [["#0B77A0", "#074761"], ["#0D8B9C", "#085660"], 
+                            ["#109994", "#0D7D78"], ["#11A28C", "#0D8170"], 
+                            ["#12AD7F", "#0D795A"], ["#14B66E", "#12A261"], 
+                            ["#14BD5C", "#0F8F46"], ["#15C247", "#109235"], 
+                            ["#15C62E", "#12A627"], ["#16C80D", "#11980A"]]
+        self.listColorCurSs = [["#91DCF7", "#12B4EE"], ["#90E1F4", "#31C8EB"], 
+                               ["#8FE6EE", "#21CBDD"], ["#8CE9E6", "#24BEBA"],
+                               ["#8AECDE", "#20C6AE"], ["#87EFD2", "#18B487"],
+                               ["#83F1C5", "#14AC6E"], ["#7FF3B6", "#11B760"], 
+                               ["#7AF4A3", "#10BC49"], ["#74F58D", "#0CAC2A"]]
+        self.listColorGs = [["#E83E2A", "#BC2414"], ["#ED5F36", "#C43812"],
+                            ["#F0743E", "#EC5512"], ["#F38544", "#F06A18"],
+                            ["#F59449", "#E1680D"], ["#F7A34F", "#E4770A"],
+                            ["#F9B053", "#EE8B08"], ["#FBB957", "#E48A06"],
+                            ["#FCBF59", "#FBA00D"], ["#FCC25A", "#F6A004"]]
+        self.listColorFs = [["#F3F595", "black"], ["#F6F791", "black"], 
+                            ["#F7F98B", "black"], ["#F9FA81", "black"], 
+                            ["#FBFB75", "black"], ["#FCFD64", "black"], 
+                            ["#FDFD54", "black"], ["#FEFE3B", "black"], 
+                            ["#FFFF27", "black"], ["#FFFF10", "black"]]
+        self.listColorLines = ["#FF0000", "#00B050", "#163E64", "#78206E", "#3A3A3A", "#0070C0", "#FFC000", "#C00000", "#7030A0", "#7F7F7F"]
+        
+        self.isLv4 = False
+        self.isStucked = False
         
         self.showFrame1()
         
@@ -347,7 +369,7 @@ class SystemGUI():
             
         for index, lines in enumerate(self.listLine):
             drawSearchLines(canvas, lines, edge, len(self.listRemainLine[index]))
- 
+  
         # Draw current position of the vehicle
         for index, sPoint in enumerate(self.listCurSs):
             if sPoint is None:
@@ -355,6 +377,10 @@ class SystemGUI():
             name = "S" if index == 0 else "S" + str(index)
             drawSquare(canvas, sPoint[1], sPoint[0], edge, fill=self.listColorCurSs[index][0], outline=self.listColorCurSs[index][1])
             canvas.create_text(sPoint[1] * edge + edge / 2, sPoint[0] * edge + edge / 2, text = name, fill="black")
+        
+        if self.isLv4 and self.isStucked and len(self.listRemainLine[0]) == 1:  
+            canvas.create_rectangle(40, 160, 360, 240, fill="#85CBEB")
+            canvas.create_text(wth / 2, hht / 2, text = "The algorithm got stucked", fill = "black", font = self.font2)
         
         # Draw 4 directions' border
         canvas.create_line([(2, 0), (2, hht)], fill='black', tags='grid_line_w')
@@ -386,6 +412,7 @@ class SystemGUI():
         
         self.curNumState = 0
         self.listCurSs = [None for _ in range(len(self.listSs))]
+        self.list1stAppearanceGs = [[0] * len(self.listAllGs[i]) for i in range(len(self.listAllGs))]
         self.chooseViewFrame()
         
     def backFromFrame2(self):
@@ -408,6 +435,8 @@ class SystemGUI():
         self.frame4.pack(expand=True, anchor='center')
         self.clearFrame(self.frame4)  
         self.curNumState = 0
+        self.listCurGs = [0 for _ in range(len(self.listAllGs))]
+        self.copy1Item(self.listGs, self.listAllGs)
         self.stepByStepFrame(isAuto)
        
     def showFrame5(self):
@@ -526,8 +555,12 @@ class SystemGUI():
                     self.getListEdgePath()
                 self.showFrame2()
             else:
+                self.isLv4 = True
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
-                isTrue, goal, self.listPath = hill_climbing_level_4(self.problem)
+                self.isStucked, self.listAllGs, self.listPath = hill_climbing_level_4(self.problem)
+                self.isStucked = not self.isStucked
+                self.listCurGs = [0 for _ in range(len(self.listAllGs))]
+                self.list1stAppearanceGs = [[0] * len(self.listAllGs[i]) for i in range(len(self.listAllGs))]
                 if isinstance(self.listPath[0], int):
                     self.isSolvable = False
                 else:
@@ -563,10 +596,13 @@ class SystemGUI():
         for i in range(listLen):
             listB[i].append(listA[i].pop(0))
             
-    def copy1Item(Self, list1D, list2D, constraint):
+    def copy1Item(Self, list1D, list2D, constraint: list = []):
         listLen = len(list1D)
         for i in range(listLen):
-            list1D[i] = list2D[i][len(list2D[i]) - 1][0] if len(constraint[i]) != 0 else None
+            if constraint != []:
+                list1D[i] = list2D[i][len(list2D[i]) - 1][0] if len(constraint[i]) != 0 else None
+            else:
+                list1D[i] = list2D[i][0]
     
     def prevMap(self, kwargs = []):
         self.curNumState = self.curNumState - 1
@@ -580,6 +616,11 @@ class SystemGUI():
             if len(lines) >= 2:
                 cur = lines.pop()
                 self.listRemainLine[index].insert(0, cur)
+                if self.isLv4 and len(self.listGs[index]) > 0 and (list(cur[0]) == self.listAllGs[index][self.listCurGs[index] - 1] 
+                    and self.list1stAppearanceGs[index][self.listCurGs[index]] - 1 == self.curNumState):
+                    
+                    self.listCurGs[index] -= 1
+                    self.listGs[index] = self.listAllGs[index][self.listCurGs[index]]
             
         self.copy1Item(self.listCurSs, self.listLine, constraint = self.listRemainLine)
         
@@ -608,6 +649,10 @@ class SystemGUI():
             if len(lines) >= 1:
                 cur = lines.pop(0)
                 self.listLine[index].append(cur)
+                if self.isLv4 and list(cur[0]) == self.listGs[index]:
+                    self.listCurGs[index] += 1
+                    self.listGs[index] = self.listAllGs[index][self.listCurGs[index]]
+                    self.list1stAppearanceGs[index][self.listCurGs[index]] = self.curNumState
             
         self.copy1Item(self.listCurSs, self.listLine, constraint = self.listRemainLine)
         
@@ -618,13 +663,37 @@ class SystemGUI():
             if not len(self.listLine[0]) == 0:
                 kwargs[1].pack_forget()
                 kwargs[2].pack(side = tk.LEFT, pady = (0, 5), padx = (0, 50))
-            if len(self.listRemainLine[0]) == 0:
-                kwargs[4].pack_forget()
-                kwargs[3].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))
+            if self.isLv4:
+                if len(self.listRemainLine[0]) == 1:
+                    kwargs[4].pack_forget()
+                    kwargs[3].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))
+                    
+                    for index, sPoint in enumerate(self.listCurSs):
+                        if sPoint is None:
+                            self.listCurSs[index] = self.listLine[index][len(self.listLine[index]) - 1][0]
+                                    
+                    self.clearCanvas(kwargs[0])
+                    self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
+            else:
+                if len(self.listRemainLine[0]) == 0:
+                    kwargs[4].pack_forget()
+                    kwargs[3].pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))
         else:
-            if len(self.listRemainLine[0]) != 0:
-                temp = kwargs
-                kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
+            if self.isLv4:
+                if len(self.listRemainLine[0]) != 1:
+                    temp = kwargs
+                    kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
+                else:
+                    for index, sPoint in enumerate(self.listCurSs):
+                        if sPoint is None:
+                            self.listCurSs[index] = self.listLine[index][len(self.listLine[index]) - 1][0]
+                                    
+                    self.clearCanvas(kwargs[0])
+                    self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
+            else:
+                if len(self.listRemainLine[0]) != 0:
+                    temp = kwargs
+                    kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
        
     def slowDownFunc(self, kwargs = []):
         if self.autoRunTime[0] > 1:
