@@ -3,12 +3,15 @@ from node import Node
 from queue import PriorityQueue
 
 class HC_State:
-    def __init__(self, list_states, parent = None, cur_agent = 0):
+    def __init__(self, list_states, wait_times = None, parent = None, cur_agent = 0):
         self.parent = parent
         self.cur_agent = cur_agent
         self.states = list_states
 
-        self.wait_time = [0] * len(list_states)
+        if wait_times == None:
+            self.wait_time = [0] * len(self.states)
+        else:
+            self.wait_time = wait_times
 
     def get_wait_time(self):
         return self.wait_time[self.cur_agent] 
@@ -27,7 +30,7 @@ class HC_State:
         return not problem.is_valid_state(self.states[0], 0) or self.states[0].fuel == 0
 
 def next_state(cur_state: HC_State, problem: Problem, action):
-    next_state = HC_State(cur_state.states.copy(), cur_state, cur_state.cur_agent)
+    next_state = HC_State(cur_state.states.copy(), cur_state.wait_time.copy(), cur_state, cur_state.cur_agent)
     id = cur_state.cur_agent
     if next_state.get_wait_time() > 0:
         next_state.down_wait_time()
@@ -39,6 +42,10 @@ def next_state(cur_state: HC_State, problem: Problem, action):
         problem.generate_distination(id)
 
     next_state.change_agent()
+    # print('state:')
+    # print('agent: ',next_state.cur_agent)
+    # for index, s in enumerate(next_state.states):
+    #     print('state ', index, ': ', s.x, s.y, s.time, s.fuel, next_state.wait_time[index])
     return next_state
 
 
@@ -129,7 +136,7 @@ if __name__ == '__main__':
 [0, 0, 5, 0, 0, 0, -1, -1, -1, 0]]
     start = [(1, 1), (2, 5), (8, 5)]
     goal = [(7, 8), (9, 0), (4, 6)]
-    problem = Problem(matrix, start, goal, 50, 10)
+    problem = Problem(matrix, start, goal, 20, 10)
     is_reached_goal, goals, path = hill_climbing_level_4(problem)
     print("result: ")
     for row in goals:
