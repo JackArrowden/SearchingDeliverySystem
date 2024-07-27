@@ -50,7 +50,7 @@ class Problem:
     def init(self, trip_id: int = 0) -> State:
         return State(self.start[trip_id][0], self.start[trip_id][1], self.fuel_capacity, self.limit_time)
 
-    def ACTIONS(self, current: State) -> list:
+    def ACTIONS(self, current: State, trip_id: int = 0) -> list:
         actions = []
 
         # check conditions to add the action of refill fuel
@@ -66,7 +66,7 @@ class Problem:
             
             if self.limit_time is not None:
                 new_time = current.time - self.grid.time_2_in(new_x, new_y)
-                if not self.in_time(new_x, new_y, new_time):
+                if not self.in_time(new_x, new_y, new_time, trip_id):
                     continue
             
             actions.append((delta_x, delta_y))
@@ -77,6 +77,11 @@ class Problem:
         new_x = current.x + action[0]
         new_y = current.y + action[1]
 
+        if action == (0, 0):
+            new_time = max(current.time - 1, 0)
+            new_fuel = current.fuel
+            return State(new_x, new_y, new_fuel, new_time)
+        
         new_fuel = None
         if self.grid.is_gas_station(new_x, new_y):
             new_fuel = self.fuel_capacity
@@ -95,20 +100,21 @@ class Problem:
     def time_cost(self, prev_state: State, action, cur_state: State):
         return self.grid.time_2_in(cur_state.x, cur_state.y)
 
-    def EXPAND(self, node: Node):
+    def EXPAND(self, node: Node, trip_id: int = 0):
         cur_state = node.state
 
-        for action in self.ACTIONS(cur_state):
+        for action in self.ACTIONS(cur_state, trip_id):
             next_state = self.RESULT(cur_state, action)
 
             cost = node.path_cost + self.ACTION_COST(cur_state, action, next_state)
             yield Node(next_state, node, cost)
 
 
-def trace_path(node: Node):
-    if node is None:
+def trace_path(last_node):
+    if last_node is None:
         return [-1]
     path = []
+    node = last_node
     while node is not None:
         path.append((node.state.x, node.state.y))
         node = node.parent
