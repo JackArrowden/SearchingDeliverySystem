@@ -412,6 +412,7 @@ class SystemGUI():
         self.curNumState = 0
         self.listCurSs = [None for _ in range(len(self.listSs))]
         self.list1stAppearanceGs = [[0] * len(self.listAllGs[i]) for i in range(len(self.listAllGs))]
+        self.listGs = [cur[0] for cur in self.listAllGs]
         self.chooseViewFrame()
         
     def backFromFrame2(self):
@@ -559,6 +560,8 @@ class SystemGUI():
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
                 self.isStucked, self.listAllGs, self.listPath = hill_climbing_level_4(self.problem)
                 self.isStucked = not self.isStucked
+                if not self.isStucked:
+                    self.listPath[0].append(self.listPath[0][len(self.listPath[0]) - 1])
                 self.listCurGs = [0 for _ in range(len(self.listAllGs))]
                 self.list1stAppearanceGs = [[0] * len(self.listAllGs[i]) for i in range(len(self.listAllGs))]
                 if isinstance(self.listPath[0], int):
@@ -639,23 +642,17 @@ class SystemGUI():
         curStep = "Iteration: " + str(self.curNumState)
         if isAuto:
             self.clearCanvas(kwargs[2])
-            if self.isLv4 and self.isStucked and len(self.listRemainLine[0]) == 1:  
-                kwargs[2].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
-            else:
-                kwargs[2].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
+            kwargs[2].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
         else:
             self.clearCanvas(kwargs[5])
-            if self.isLv4 and self.isStucked and len(self.listRemainLine[0]) == 1:  
-                kwargs[5].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
-            else:
-                kwargs[5].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
+            kwargs[5].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
         
         cur = (0, 0)
         for index, lines in enumerate(self.listRemainLine):
             if len(lines) >= 1:
                 cur = lines.pop(0)
                 self.listLine[index].append(cur)
-                if self.isLv4 and list(cur[0]) == self.listGs[index]:
+                if self.isLv4 and index != 0 and list(cur[0]) == self.listGs[index]:
                     self.listCurGs[index] += 1
                     self.listGs[index] = self.listAllGs[index][self.listCurGs[index]]
                     self.list1stAppearanceGs[index][self.listCurGs[index]] = self.curNumState
@@ -682,7 +679,8 @@ class SystemGUI():
                     self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
 
                     self.clearCanvas(kwargs[5])
-                    kwargs[5].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
+                    if self.isStucked:
+                        kwargs[5].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
             else:
                 if len(self.listRemainLine[0]) == 0:
                     kwargs[4].pack_forget()
@@ -700,8 +698,9 @@ class SystemGUI():
                     self.clearCanvas(kwargs[0])
                     self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
                     
-                    self.clearCanvas(kwargs[2])
-                    kwargs[2].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
+                    if self.isStucked:
+                        self.clearCanvas(kwargs[2])
+                        kwargs[2].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
             else:
                 if len(self.listRemainLine[0]) != 0:
                     temp = kwargs
