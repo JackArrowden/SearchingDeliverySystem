@@ -281,8 +281,11 @@ class SystemGUI():
         ## Cur state
         curStep = "Iteration: " + str(self.curNumState)
         self.curState = tk.Canvas(self.subFrame4a, bg = "#F0F0F0", width = 200, height = 30)
-        self.curState.pack(side = tk.LEFT, expand=True, anchor='center', pady = (20, 0), padx = (50, 50))     
-        self.curState.create_text(100, 10, text = curStep, fill = "black", font = self.font2)
+        if self.isLv4 and self.isStucked and len(self.listRemainLine[0]) == 1:  
+            self.curState.create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
+        else:
+            self.curState.pack(side = tk.LEFT, expand=True, anchor='center', pady = (20, 0), padx = (50, 50))     
+            self.curState.create_text(100, 10, text = curStep, fill = "black", font = self.font2)
         
         ## Sub frame 4 a2
         self.subFrame4a2 = tk.Frame(self.subFrame4a, width = 200)
@@ -378,10 +381,6 @@ class SystemGUI():
             drawSquare(canvas, sPoint[1], sPoint[0], edge, fill=self.listColorCurSs[index][0], outline=self.listColorCurSs[index][1])
             canvas.create_text(sPoint[1] * edge + edge / 2, sPoint[0] * edge + edge / 2, text = name, fill="black")
         
-        if self.isLv4 and self.isStucked and len(self.listRemainLine[0]) == 1:  
-            canvas.create_rectangle(40, 160, 360, 240, fill="#85CBEB")
-            canvas.create_text(wth / 2, hht / 2, text = "The algorithm got stucked", fill = "black", font = self.font2)
-        
         # Draw 4 directions' border
         canvas.create_line([(2, 0), (2, hht)], fill='black', tags='grid_line_w')
         canvas.create_line([(wth, 0), (wth, hht)], fill='black', tags='grid_line_w')
@@ -436,7 +435,8 @@ class SystemGUI():
         self.clearFrame(self.frame4)  
         self.curNumState = 0
         self.listCurGs = [0 for _ in range(len(self.listAllGs))]
-        self.copy1Item(self.listGs, self.listAllGs)
+        if self.isLv4:
+            self.copy1Item(self.listGs, self.listAllGs, isHead = True)
         self.stepByStepFrame(isAuto)
        
     def showFrame5(self):
@@ -596,13 +596,13 @@ class SystemGUI():
         for i in range(listLen):
             listB[i].append(listA[i].pop(0))
             
-    def copy1Item(Self, list1D, list2D, constraint: list = []):
+    def copy1Item(Self, list1D, list2D, constraint: list = [], isHead = False):
         listLen = len(list1D)
         for i in range(listLen):
-            if constraint != []:
-                list1D[i] = list2D[i][len(list2D[i]) - 1][0] if len(constraint[i]) != 0 else None
-            else:
+            if isHead:
                 list1D[i] = list2D[i][0]
+            else:
+                list1D[i] = list2D[i][len(list2D[i]) - 1][0] if len(constraint[i]) != 0 else None
     
     def prevMap(self, kwargs = []):
         self.curNumState = self.curNumState - 1
@@ -639,10 +639,16 @@ class SystemGUI():
         curStep = "Iteration: " + str(self.curNumState)
         if isAuto:
             self.clearCanvas(kwargs[2])
-            kwargs[2].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
+            if self.isLv4 and self.isStucked and len(self.listRemainLine[0]) == 1:  
+                kwargs[2].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
+            else:
+                kwargs[2].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
         else:
             self.clearCanvas(kwargs[5])
-            kwargs[5].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
+            if self.isLv4 and self.isStucked and len(self.listRemainLine[0]) == 1:  
+                kwargs[5].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
+            else:
+                kwargs[5].create_text(100, 10, text = curStep, fill = "black", font = self.font2)
         
         cur = (0, 0)
         for index, lines in enumerate(self.listRemainLine):
@@ -674,6 +680,9 @@ class SystemGUI():
                                     
                     self.clearCanvas(kwargs[0])
                     self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
+
+                    self.clearCanvas(kwargs[5])
+                    kwargs[5].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
             else:
                 if len(self.listRemainLine[0]) == 0:
                     kwargs[4].pack_forget()
@@ -690,6 +699,9 @@ class SystemGUI():
                                     
                     self.clearCanvas(kwargs[0])
                     self.mapDrawing(kwargs[0], self.width, self.height, self.edge)
+                    
+                    self.clearCanvas(kwargs[2])
+                    kwargs[2].create_text(100, 10, text = "Got stucked!", fill = "black", font = self.font2)
             else:
                 if len(self.listRemainLine[0]) != 0:
                     temp = kwargs
