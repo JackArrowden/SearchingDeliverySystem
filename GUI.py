@@ -10,6 +10,7 @@ from source_level_1.BFS import BFS
 from source_level_1.DFS import DFS
 from source_level_1.UCS import UCS
 from source_level_1.GBFS import GBFS
+from hill_climbing_level_4 import hill_climbing_level_4
 
 def drawSquare(canvas, x, y, edge, **kwargs):
     canvas.create_rectangle(x * edge, y * edge, x * edge + edge, y * edge + edge, **kwargs)
@@ -49,7 +50,7 @@ class SystemGUI():
         self.fileName = ""
         self.map = [[0]]
         self.listSs = []
-        self.listCurSs = [None]
+        self.listCurSs = [None for _ in range(len(self.listSs))]
         self.listGs = []
         self.listFs = []
         self.isSolvable = True
@@ -73,11 +74,11 @@ class SystemGUI():
         self.autoRunTime = [1, {1: 1000, 2: 600, 3: 400, 4: 200, 5: 100}]
         self.resetBtn = [True, True, True]
         
-        self.listColorSs = [["#00B050", "green"]]
-        self.listColorCurSs = [["#73F589", "green"]]
-        self.listColorGs = [["#E73B29", "darkred"]]
-        self.listColorFs = [["yellow", "black"], ["yellow", "black"]]
-        self.listColorLines = ["green", "red"]
+        self.listColorSs = [["#00B050", "green"], ["#00B050", "green"], ["#00B050", "green"]]
+        self.listColorCurSs = [["#73F589", "green"], ["#73F589", "green"], ["#73F589", "green"]]
+        self.listColorGs = [["#E73B29", "darkred"], ["#E73B29", "darkred"], ["#E73B29", "darkred"]]
+        self.listColorFs = [["#F3F595", "black"], ["#F6F791", "black"], ["#F7F98B", "black"], ["#F9FA81", "black"], ["#FBFB75", "black"], ["#FCFD64", "black"], ["#FDFD54", "black"], ["#FEFE3B", "black"], ["#FFFF27", "black"], ["#FFFF10", "black"]]
+        self.listColorLines = ["green", "red", "blue"]
         
         self.showFrame1()
         
@@ -339,8 +340,9 @@ class SystemGUI():
         
         # Draw fuel cells
         for index, fPoint in enumerate(self.listFs):
-            name = "F" + str(-self.map[fPoint[0]][fPoint[1]] - 1) if self.map[fPoint[0]][fPoint[1]] < 0 else "F"
-            drawSquare(canvas, fPoint[1], fPoint[0], edge, fill=self.listColorFs[index][0], outline=self.listColorFs[index][1])
+            curColor = self.listColorFs[-self.map[fPoint[0]][fPoint[1]] - 1] if -self.map[fPoint[0]][fPoint[1]] - 1 < 9 else self.listColorFs[9]
+            name = "F" + str(-self.map[fPoint[0]][fPoint[1]] - 1) if self.map[fPoint[0]][fPoint[1]] < -1 else "F"
+            drawSquare(canvas, fPoint[1], fPoint[0], edge, fill=curColor[0], outline=curColor[1])
             canvas.create_text(fPoint[1] * edge + edge / 2, fPoint[0] * edge + edge / 2, text = name, fill="black")
             
         for index, lines in enumerate(self.listLine):
@@ -383,7 +385,7 @@ class SystemGUI():
         self.move2DContent(self.listLine, self.listRemainLine)
         
         self.curNumState = 0
-        self.listCurSs = [None]
+        self.listCurSs = [None for _ in range(len(self.listSs))]
         self.chooseViewFrame()
         
     def backFromFrame2(self):
@@ -426,7 +428,7 @@ class SystemGUI():
         self.fileName = ""
         self.map = [[0]]
         self.listSs = []
-        self.listCurSs = [None]
+        self.listCurSs = [None for _ in range(len(self.listSs))]
         self.listGs = []
         self.listFs = []
         self.isSolvable = True
@@ -525,12 +527,18 @@ class SystemGUI():
                 self.showFrame2()
             else:
                 self.problem = problem.Problem(self.map, self.listSs, self.listGs, resultRead[3], resultRead[4])
-                # Choose another algorithm to run
-                # self.listPath = UCS_level_2_3(self.problem)
+                isTrue, goal, self.listPath = hill_climbing_level_4(self.problem)
+                if isinstance(self.listPath[0], int):
+                    self.isSolvable = False
+                else:
+                    self.getListEdgePath()
                 self.showFrame2()
 
     def getListEdgePath(self):
         numVertice = len(self.listPath)
+        self.listLine = [[] for _ in range(numVertice)]
+        self.listRemainLine = [[] for _ in range(numVertice)]
+        self.listCurSs = [None for _ in range(numVertice)]
         for i in range(numVertice):
             curLen = len(self.listPath[i])
             if i == 0 and curLen == 0:

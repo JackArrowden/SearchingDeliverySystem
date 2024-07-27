@@ -53,7 +53,7 @@ def readInput(file):
                     if int(letter2) not in index:
                         index.append(int(letter2))
                         points.append([int(letter2)])
-                    points[index.index(int(letter2))].insert(1, [i, j]) # A list or a tuple? Starting from 0 or 1?
+                    points[index.index(int(letter2))].insert(1, [i, j])
                 elif letter[0] == 'G':
                     curRow.append(0)   
                     if letter2 not in index:
@@ -64,7 +64,7 @@ def readInput(file):
                     if f is None:
                         curRow.append(0)
                     else:
-                        curRow.append(-1 - int(letter2))
+                        curRow.append(-1 - int(letter[1:]))
                     fuel.append([i, j])   
                     
             cityMap.append(curRow)
