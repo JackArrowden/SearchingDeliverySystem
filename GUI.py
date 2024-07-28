@@ -460,9 +460,14 @@ class SystemGUI():
         self.listSs = []
         self.listCurSs = [None for _ in range(len(self.listSs))]
         self.listGs = []
+        self.listCurGs = []
         self.listFs = []
         self.isSolvable = True
         self.isLevel1 = False
+        
+        self.width = 0
+        self.height = 0
+        self.edge = 0
         
         self.isHead = True
         self.isTail = False
@@ -473,7 +478,12 @@ class SystemGUI():
         self.listLine = [[]]
         self.listRemainLine = [[]]
         
+        self.resetBtn = [True, True, True]
+        
         self.autoRunTime[0] = 1
+        
+        self.isLv4 = False
+        self.isStucked = False
         
         self.showFrame1()   
         
