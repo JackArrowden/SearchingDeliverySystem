@@ -112,7 +112,7 @@ class Problem:
 
 def trace_path(last_node):
     if last_node is None:
-        return [-1]
+        return -1
     path = []
     node = last_node
     while node is not None:
