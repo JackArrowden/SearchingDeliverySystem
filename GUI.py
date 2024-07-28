@@ -48,6 +48,7 @@ class SystemGUI():
         self.edge = 0
             
         self.fileName = ""
+        self.idAfter = set()
         self.map = [[0]]
         self.listSs = []
         self.listCurSs = [None for _ in range(len(self.listSs))]
@@ -225,7 +226,7 @@ class SystemGUI():
         self.showFrame2()
     
     def finalResultFrame(self): #### Frame 3
-        self.move2DContent(self.listRemainLine, self.listLine)
+        self.move2DContentRev(self.listRemainLine, self.listLine)
         
         wth = 600 if len(self.map[0]) > 3 / 2 * len(self.map) else int(400 * len(self.map[0]) / len(self.map))
         hht = 400 if len(self.map) > 2 / 3 * len(self.map[0]) else int(600 * len(self.map) / len(self.map[0]))
@@ -328,10 +329,11 @@ class SystemGUI():
                 self.speedUp2.pack(side = tk.RIGHT, pady = (0, 5), padx = (50, 0))  
             
         if isAuto:
-            self.subFrame4c.after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = [self.subFrame4b, self.subFrame4c, self.curState]))
+            curID = self.root.after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = [self.subFrame4b, self.subFrame4c, self.curState]))
+            self.idAfter.add(curID)
             
     def mapDrawing(self, canvas, wth, hht, edge):
-        self.clearFrame(canvas)
+        self.clearCanvas(canvas)
         
         for line in range(0, wth + edge, edge):
             canvas.create_line([(line, 0), (line, hht)], fill='black', tags='grid_line_w')
@@ -372,7 +374,7 @@ class SystemGUI():
             
         for index, lines in enumerate(self.listLine):
             drawSearchLines(canvas, lines, edge, len(self.listRemainLine[index]))
-  
+
         # Draw current position of the vehicle
         for index, sPoint in enumerate(self.listCurSs):
             if sPoint is None:
@@ -400,6 +402,10 @@ class SystemGUI():
         self.mainFrame()
 
     def showFrame2(self):
+        for after_id in self.idAfter:
+            self.root.after_cancel(after_id)
+        self.idAfter.clear()
+        
         self.isResetList = True
         self.isHead = True
         self.isTail = False
@@ -411,6 +417,7 @@ class SystemGUI():
         
         self.curNumState = 0
         self.listCurSs = [None for _ in range(len(self.listSs))]
+
         self.list1stAppearanceGs = [[0] * len(self.listAllGs[i]) for i in range(len(self.listAllGs))]
         if self.isLv4:
             self.listGs = [cur[0] for cur in self.listAllGs]
@@ -420,7 +427,7 @@ class SystemGUI():
         if self.isLevel1:
             self.eraseAlgo()
             self.listCurGs = []
-            self.listCurSs = []
+            self.listCurSs = [None for _ in range(len(self.listSs))]
             self.showFrame5()
         else:
             self.resetProblem()
@@ -602,11 +609,21 @@ class SystemGUI():
         while listA:
             cur = listA.pop()
             listB.insert(0, cur)
+            
+    def moveContentRev(self, listA, listB):
+        while listA:
+            cur = listA.pop(0)
+            listB.append(cur)
     
     def move2DContent(self, listA, listB):
         listLen = len(listA)
         for index in range(listLen):
             self.moveContent(listA[index], listB[index])
+            
+    def move2DContentRev(self, listA, listB):
+        listLen = len(listA)
+        for index in range(listLen):
+            self.moveContentRev(listA[index], listB[index]) 
     
     def move1Item(self, listA, listB):
         listLen = len(listA)
