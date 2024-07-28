@@ -82,11 +82,11 @@ class SystemGUI():
                             ["#12AD7F", "#0D795A"], ["#14B66E", "#12A261"], 
                             ["#14BD5C", "#0F8F46"], ["#15C247", "#109235"], 
                             ["#15C62E", "#12A627"], ["#16C80D", "#11980A"]]
-        self.listColorCurSs = [["#91DCF7", "#12B4EE"], ["#90E1F4", "#31C8EB"], 
-                               ["#8FE6EE", "#21CBDD"], ["#8CE9E6", "#24BEBA"],
-                               ["#8AECDE", "#20C6AE"], ["#87EFD2", "#18B487"],
-                               ["#83F1C5", "#14AC6E"], ["#7FF3B6", "#11B760"], 
-                               ["#7AF4A3", "#10BC49"], ["#74F58D", "#0CAC2A"]]
+        self.listColorCurSs = [["#09B354", "black"], ["#30BE66", "black"],
+                               ["#47C570", "black"], ["#5FCC7B", "black"],
+                               ["#78D387", "black"], ["#89D88E", "black"],
+                               ["#99DD96", "black"], ["#A7E19C", "black"],
+                               ["#AFE4A0", "black"], ["#B4E5A2", "black"]]
         self.listColorGs = [["#E83E2A", "#BC2414"], ["#ED5F36", "#C43812"],
                             ["#F0743E", "#EC5512"], ["#F38544", "#F06A18"],
                             ["#F59449", "#E1680D"], ["#F7A34F", "#E4770A"],
