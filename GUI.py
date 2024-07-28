@@ -510,7 +510,10 @@ class SystemGUI():
         
     def clearFrame(self, frame):
         for widget in frame.winfo_children():
-            widget.destroy()
+            try:
+                widget.destroy()
+            except tk.TclError as e:
+                pass
         
     def getFileName(self):
         self.fileName = self.entry.get("1.0", tk.END).strip()
@@ -720,7 +723,8 @@ class SystemGUI():
             if self.isLv4:
                 if len(self.listRemainLine[0]) != 1:
                     temp = kwargs
-                    kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
+                    curid = kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
+                    self.idAfter.add(curid)
                 else:
                     for index, sPoint in enumerate(self.listCurSs):
                         if sPoint is None:
@@ -735,7 +739,9 @@ class SystemGUI():
             else:
                 if len(self.listRemainLine[0]) != 0:
                     temp = kwargs
-                    kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
+                    curid = kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
+                    self.idAfter.add(cur)
+                    self.idAfter.add(curid)
        
     def slowDownFunc(self, kwargs = []):
         if self.autoRunTime[0] > 1:
