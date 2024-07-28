@@ -356,19 +356,19 @@ class SystemGUI():
             name = "S" if index == 0 else "S" + str(index)
             drawSquare(canvas, sPoint[1], sPoint[0], edge, fill=self.listColorSs[index][0], outline=self.listColorSs[index][1])
             canvas.create_text(sPoint[1] * edge + edge / 2, sPoint[0] * edge + edge / 2, text = name, fill="black")
-            
-        # Draw goal vertice
-        for index, gPoint in enumerate(self.listGs):
-            name = "G" if index == 0 else "G" + str(index)
-            drawSquare(canvas, gPoint[1], gPoint[0], edge, fill=self.listColorGs[index][0], outline=self.listColorGs[index][1])
-            canvas.create_text(gPoint[1] * edge + edge / 2, gPoint[0] * edge + edge / 2, text = name, fill="black")
-        
+  
         # Draw fuel cells
         for index, fPoint in enumerate(self.listFs):
             curColor = self.listColorFs[-self.map[fPoint[0]][fPoint[1]] - 1] if -self.map[fPoint[0]][fPoint[1]] - 1 < 9 else self.listColorFs[9]
             name = "F" + str(-self.map[fPoint[0]][fPoint[1]] - 1) if self.map[fPoint[0]][fPoint[1]] < -1 else "F"
             drawSquare(canvas, fPoint[1], fPoint[0], edge, fill=curColor[0], outline=curColor[1])
             canvas.create_text(fPoint[1] * edge + edge / 2, fPoint[0] * edge + edge / 2, text = name, fill="black")
+            
+        # Draw goal vertice
+        for index, gPoint in enumerate(self.listGs):
+            name = "G" if index == 0 else "G" + str(index)
+            drawSquare(canvas, gPoint[1], gPoint[0], edge, fill=self.listColorGs[index][0], outline=self.listColorGs[index][1])
+            canvas.create_text(gPoint[1] * edge + edge / 2, gPoint[0] * edge + edge / 2, text = name, fill="black")
             
         for index, lines in enumerate(self.listLine):
             drawSearchLines(canvas, lines, edge, len(self.listRemainLine[index]))
@@ -412,12 +412,15 @@ class SystemGUI():
         self.curNumState = 0
         self.listCurSs = [None for _ in range(len(self.listSs))]
         self.list1stAppearanceGs = [[0] * len(self.listAllGs[i]) for i in range(len(self.listAllGs))]
-        self.listGs = [cur[0] for cur in self.listAllGs]
+        if self.isLv4:
+            self.listGs = [cur[0] for cur in self.listAllGs]
         self.chooseViewFrame()
         
     def backFromFrame2(self):
         if self.isLevel1:
             self.eraseAlgo()
+            self.listCurGs = []
+            self.listCurSs = []
             self.showFrame5()
         else:
             self.resetProblem()
@@ -460,6 +463,7 @@ class SystemGUI():
         self.listSs = []
         self.listCurSs = [None for _ in range(len(self.listSs))]
         self.listGs = []
+        self.listAllGs = []
         self.listCurGs = []
         self.listFs = []
         self.isSolvable = True
