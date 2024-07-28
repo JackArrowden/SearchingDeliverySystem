@@ -740,7 +740,6 @@ class SystemGUI():
                 if len(self.listRemainLine[0]) != 0:
                     temp = kwargs
                     curid = kwargs[1].after(self.autoRunTime[1][self.autoRunTime[0]], lambda: self.nextMap(isAuto = True, kwargs = temp))
-                    self.idAfter.add(cur)
                     self.idAfter.add(curid)
        
     def slowDownFunc(self, kwargs = []):

@@ -42,10 +42,6 @@ def next_state(cur_state: HC_State, problem: Problem, action):
         problem.generate_distination(id)
 
     next_state.change_agent()
-    # print('state:')
-    # print('agent: ',next_state.cur_agent)
-    # for index, s in enumerate(next_state.states):
-    #     print('state ', index, ': ', s.x, s.y, s.time, s.fuel, next_state.wait_time[index])
     return next_state
 
 
@@ -122,25 +118,3 @@ def hill_climbing_level_4(problem: Problem):
             return (False, problem.goal, trace_path_level_4(cur, problem))
 
 
-
-if __name__ == '__main__':
-    matrix =   [[0, 0, 0, 0, -1, -1, 0,  0, 0, 0],
-[0, 0, 0, 0,  0,  0, 0, -1, 0, -1],
-[0, 0, -1, -1, -1, 0, 0, -1, 0, -1],
-[0, 0, 0, 0, -1, 0, 0, -1, 0, 0],
-[0, 0, -1, -1, -1, 0, 0, -1, -1, 0],
-[1, 0, -1, 0, 0, 0, 0, 0, -1, 0],
-[0, 0, -2, 0, -1, 4, -1, 8, -1, 0],
-[0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
-[0, -1, -1, -1, -1, 0, 0, 0, 0, 0],
-[0, 0, 5, 0, 0, 0, -1, -1, -1, 0]]
-    start = [(1, 1), (2, 5), (8, 5)]
-    goal = [(7, 8), (9, 0), (4, 6)]
-    problem = Problem(matrix, start, goal, 20, 10)
-    is_reached_goal, goals, path = hill_climbing_level_4(problem)
-    print("result: ")
-    for row in goals:
-        print(row)
-    print('\n')
-    for row in path:
-        print(row)
