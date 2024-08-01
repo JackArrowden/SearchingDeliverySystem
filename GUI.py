@@ -781,4 +781,10 @@ class SystemGUI():
             self.entry.delete("1.0", tk.END)
     
     def exit(self):
-        self.root.destroy()
+        try:
+            self.root.destroy()
+        except:
+            try:
+                self.root.destroy()
+            except:
+                pass
